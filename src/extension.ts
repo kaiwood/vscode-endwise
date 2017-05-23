@@ -1,29 +1,47 @@
 'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "endwise" is now active!');
+    let disposable = vscode.commands.registerCommand('endwise.enter', () => {
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with  registerCommand
-    // The commandId parameter must match the command field in package.json
-    let disposable = vscode.commands.registerCommand('extension.sayHello', () => {
-        // The code you place here will be executed every time your command is executed
+        let editor = vscode.window.activeTextEditor;
 
-        // Display a message box to the user
-        vscode.window.showInformationMessage('Hello World!');
+        let lineNumber: number = editor.selection.active.line;
+        let columnNumber: number = editor.selection.active.character;
+        let lineText = editor.document.lineAt(lineNumber).text;
+        let lineLength = lineText.length;
+
+        if (shouldAddEnd(lineText)) {
+            editor.edit((textEditor) => {
+                textEditor.insert(new vscode.Position(lineNumber, lineLength), "\nend");
+            }).then(async () => {
+                await vscode.commands.executeCommand('editor.action.reindentlines');
+                await vscode.commands.executeCommand('cursorUp');
+                await vscode.commands.executeCommand('editor.action.insertLineAfter');
+            });
+        } else {
+            editor.edit((textEditor) => {
+                textEditor.insert(new vscode.Position(lineNumber, lineLength), "\n");
+            }).then(async () => {
+                await vscode.commands.executeCommand('editor.action.reindentlines');
+            })
+        }
     });
 
     context.subscriptions.push(disposable);
 }
 
-// this method is called when your extension is deactivated
+function shouldAddEnd(lineText) {
+    let trimmedText = lineText.trim();
+
+    if (trimmedText.startsWith("if ")) return true;
+    if (trimmedText.startsWith("def ")) return true;
+    if (trimmedText.startsWith("class ")) return true;
+    if (trimmedText.startsWith("module ")) return true;
+
+    return false;
+}
+
 export function deactivate() {
 }

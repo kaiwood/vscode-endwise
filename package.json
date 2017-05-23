@@ -11,14 +11,17 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onLanguage:ruby"
     ],
     "main": "./out/src/extension",
     "contributes": {
-        "commands": [{
-            "command": "extension.sayHello",
-            "title": "Hello World"
-        }]
+        "keybindings": [
+            {
+                "command": "endwise.enter",
+                "key": "enter",
+                "when": "editorTextFocus && editorLangId == 'ruby'"
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "tsc -p ./",
