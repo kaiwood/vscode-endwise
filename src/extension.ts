@@ -15,7 +15,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(enter);
 }
 
-function endwiseEnter() {
+async function endwiseEnter() {
     let editor: vscode.TextEditor = vscode.window.activeTextEditor;
 
     let lineNumber: number = editor.selection.active.line;
@@ -24,17 +24,15 @@ function endwiseEnter() {
     let lineLength: number = lineText.length;
 
     if (shouldAddEnd(lineText)) {
-        editor.edit((textEditor) => {
+        await editor.edit((textEditor) => {
             textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}end`);
-        }).then(async () => {
-            await vscode.commands.executeCommand('cursorUp');
-            await vscode.commands.executeCommand('editor.action.insertLineAfter');
         });
+        await vscode.commands.executeCommand('cursorUp');
+        vscode.commands.executeCommand('editor.action.insertLineAfter');
     } else if (shouldUnindent(lineText)) {
-        vscode.commands.executeCommand('editor.action.outdentLines').then(() => {
-            editor.edit((textEditor) => {
-                textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}`);
-            });
+        await vscode.commands.executeCommand('editor.action.outdentLines');
+        editor.edit((textEditor) => {
+            textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}`);
         });
     } else {
         editor.edit((textEditor) => {
