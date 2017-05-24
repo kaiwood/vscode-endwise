@@ -36,6 +36,8 @@ function shouldAddEnd(lineText) {
     if (trimmedText.startsWith("def ")) return true;
     if (trimmedText.startsWith("class ")) return true;
     if (trimmedText.startsWith("module ")) return true;
+    if (trimmedText.endsWith(" do")) return true;
+    if (trimmedText.match(/.*\ do \|.*\|$/)) return true;
 
     return false;
 }
