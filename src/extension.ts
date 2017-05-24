@@ -14,18 +14,15 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (shouldAddEnd(lineText)) {
             editor.edit((textEditor) => {
-                textEditor.insert(new vscode.Position(lineNumber, lineLength), "\nend");
+                textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}end`);
             }).then(async () => {
-                await vscode.commands.executeCommand('editor.action.reindentlines');
                 await vscode.commands.executeCommand('cursorUp');
                 await vscode.commands.executeCommand('editor.action.insertLineAfter');
             });
         } else {
             editor.edit((textEditor) => {
-                textEditor.insert(new vscode.Position(lineNumber, lineLength), "\n");
-            }).then(async () => {
-                await vscode.commands.executeCommand('editor.action.reindentlines');
-            })
+                textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}`);
+            });
         }
     });
 
@@ -41,6 +38,16 @@ function shouldAddEnd(lineText) {
     if (trimmedText.startsWith("module ")) return true;
 
     return false;
+}
+
+function indentationFor(line) {
+    const trimmedLine = line.trim();
+    if (trimmedLine.length === 0) return line;
+
+    const whitespaceEndsAt = line.indexOf(trimmedLine);
+    const indentation = line.substr(0, whitespaceEndsAt)
+
+    return indentation;
 }
 
 export function deactivate() {
