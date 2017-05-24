@@ -42,12 +42,15 @@ async function endwiseEnter() {
 }
 
 function shouldAddEnd(lineText) {
-    let trimmedText: string = lineText.trim();
+    const trimmedText: string = lineText.trim();
+    const startsWithConditions = [
+        "if", "def", "class", "module"
+    ];
 
-    if (trimmedText.startsWith("if ")) return true;
-    if (trimmedText.startsWith("def ")) return true;
-    if (trimmedText.startsWith("class ")) return true;
-    if (trimmedText.startsWith("module ")) return true;
+    for (let condition of startsWithConditions) {
+        if (trimmedText.startsWith(`${condition} `)) return true;
+    }
+
     if (trimmedText.endsWith(" do")) return true;
     if (trimmedText.match(/.*\ do \|.*\|$/)) return true;
 
