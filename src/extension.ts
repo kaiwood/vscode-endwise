@@ -30,6 +30,12 @@ function endwiseEnter() {
             await vscode.commands.executeCommand('cursorUp');
             await vscode.commands.executeCommand('editor.action.insertLineAfter');
         });
+    } else if (shouldUnindent(lineText)) {
+        vscode.commands.executeCommand('editor.action.outdentLines').then(() => {
+            editor.edit((textEditor) => {
+                textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}`);
+            });
+        });
     } else {
         editor.edit((textEditor) => {
             textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}`);
@@ -50,12 +56,21 @@ function shouldAddEnd(lineText) {
     return false;
 }
 
-function indentationFor(line) {
-    const trimmedLine: string = line.trim();
-    if (trimmedLine.length === 0) return line;
+function shouldUnindent(lineText) {
+    let trimmedText: string = lineText.trim();
 
-    const whitespaceEndsAt: number = line.indexOf(trimmedLine);
-    const indentation: string = line.substr(0, whitespaceEndsAt)
+    if (trimmedText.startsWith("else")) return true;
+    if (trimmedText.startsWith("elsif ")) return true;
+
+    return false;
+}
+
+function indentationFor(lineText) {
+    const trimmedLine: string = lineText.trim();
+    if (trimmedLine.length === 0) return lineText;
+
+    const whitespaceEndsAt: number = lineText.indexOf(trimmedLine);
+    const indentation: string = lineText.substr(0, whitespaceEndsAt)
 
     return indentation;
 }
