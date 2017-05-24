@@ -20,6 +20,11 @@
                 "command": "endwise.enter",
                 "key": "enter",
                 "when": "editorTextFocus && editorLangId == 'ruby'"
+            },
+            {
+                "command": "endwise.cmdEnter",
+                "key": "cmd+enter",
+                "when": "editorTextFocus && editorLangId == 'ruby'"
             }
         ]
     },

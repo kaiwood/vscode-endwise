@@ -3,30 +3,38 @@ import * as vscode from 'vscode';
 
 export function activate(context: vscode.ExtensionContext) {
 
-    let disposable = vscode.commands.registerCommand('endwise.enter', () => {
-
-        let editor: vscode.TextEditor = vscode.window.activeTextEditor;
-
-        let lineNumber: number = editor.selection.active.line;
-        let columnNumber: number = editor.selection.active.character;
-        let lineText: string = editor.document.lineAt(lineNumber).text;
-        let lineLength: number = lineText.length;
-
-        if (shouldAddEnd(lineText)) {
-            editor.edit((textEditor) => {
-                textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}end`);
-            }).then(async () => {
-                await vscode.commands.executeCommand('cursorUp');
-                await vscode.commands.executeCommand('editor.action.insertLineAfter');
-            });
-        } else {
-            editor.edit((textEditor) => {
-                textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}`);
-            });
-        }
+    let enter = vscode.commands.registerCommand('endwise.enter', () => {
+        endwiseEnter();
     });
 
-    context.subscriptions.push(disposable);
+    let cmdEnter = vscode.commands.registerCommand('endwise.cmdEnter', async () => {
+        await vscode.commands.executeCommand('cursorEnd');
+        endwiseEnter();
+    });
+
+    context.subscriptions.push(enter);
+}
+
+function endwiseEnter() {
+    let editor: vscode.TextEditor = vscode.window.activeTextEditor;
+
+    let lineNumber: number = editor.selection.active.line;
+    let columnNumber: number = editor.selection.active.character;
+    let lineText: string = editor.document.lineAt(lineNumber).text;
+    let lineLength: number = lineText.length;
+
+    if (shouldAddEnd(lineText)) {
+        editor.edit((textEditor) => {
+            textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}end`);
+        }).then(async () => {
+            await vscode.commands.executeCommand('cursorUp');
+            await vscode.commands.executeCommand('editor.action.insertLineAfter');
+        });
+    } else {
+        editor.edit((textEditor) => {
+            textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}`);
+        });
+    }
 }
 
 function shouldAddEnd(lineText) {
