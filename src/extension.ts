@@ -16,12 +16,12 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 async function endwiseEnter() {
-    let editor: vscode.TextEditor = vscode.window.activeTextEditor;
+    const editor: vscode.TextEditor = vscode.window.activeTextEditor;
 
-    let lineNumber: number = editor.selection.active.line;
-    let columnNumber: number = editor.selection.active.character;
-    let lineText: string = editor.document.lineAt(lineNumber).text;
-    let lineLength: number = lineText.length;
+    const lineNumber: number = editor.selection.active.line;
+    const columnNumber: number = editor.selection.active.character;
+    const lineText: string = editor.document.lineAt(lineNumber).text;
+    const lineLength: number = lineText.length;
 
     if (shouldAddEnd(lineText)) {
         await editor.edit((textEditor) => {
@@ -43,7 +43,7 @@ async function endwiseEnter() {
 
 function shouldAddEnd(lineText) {
     const trimmedText: string = lineText.trim();
-    const startsWithConditions = [
+    const startsWithConditions: string[] = [
         "if", "unless", "while", "for", "do", "def", "class", "module"
     ];
 
@@ -58,7 +58,7 @@ function shouldAddEnd(lineText) {
 }
 
 function shouldUnindent(lineText) {
-    let trimmedText: string = lineText.trim();
+    const trimmedText: string = lineText.trim();
 
     if (trimmedText.startsWith("else")) return true;
     if (trimmedText.startsWith("elsif ")) return true;
