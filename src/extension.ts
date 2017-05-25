@@ -44,7 +44,7 @@ async function endwiseEnter() {
 function shouldAddEnd(lineText) {
     const trimmedText: string = lineText.trim();
     const startsWithConditions: string[] = [
-        "if", "unless", "while", "for", "do", "def", "class", "module"
+        "if", "unless", "while", "for", "do", "def", "class", "module", "case"
     ];
 
     for (let condition of startsWithConditions) {
