@@ -29,7 +29,8 @@
             },
             {
                 "command": "endwise.cmdEnter",
-                "key": "cmd+enter",
+                "key": "ctrl+enter",
+                "mac": "cmd+enter",
                 "when": "editorTextFocus && editorLangId == 'ruby'"
             }
         ]
