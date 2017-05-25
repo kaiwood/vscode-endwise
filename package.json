@@ -1,8 +1,8 @@
 {
     "name": "endwise",
     "displayName": "endwise",
-    "description": "Wisely add end",
-    "version": "0.0.1",
+    "description": "The Pope once said: Wisely add \"end\" in Ruby.",
+    "version": "0.1.0",
     "publisher": "kaiwood",
     "engines": {
         "vscode": "^1.12.0"
