@@ -42,9 +42,9 @@ async function endwiseEnter() {
             textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}`);
         });
     } else {
-        editor.edit((textEditor) => {
-            textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}`);
-        });
+        await vscode.commands.executeCommand('lineBreakInsert');
+        await vscode.commands.executeCommand('cursorWordStartRight');
+        // TODO: Depending on the context where the line break was set, the indentation off in some cases.
     }
 }
 
@@ -59,7 +59,7 @@ function shouldAddEnd(lineText) {
     }
 
     if (trimmedText.endsWith(" do")) return true;
-    if (trimmedText.match(/.*\ do \|.*\|$/)) return true;
+    // if (trimmedText.match(/.*\ do \|.*\|$/)) return true;
 
     return false;
 }
