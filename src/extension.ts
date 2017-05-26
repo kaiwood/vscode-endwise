@@ -59,7 +59,7 @@ function shouldAddEnd(lineText) {
     }
 
     if (trimmedText.endsWith(" do")) return true;
-    // if (trimmedText.match(/.*\ do \|.*\|$/)) return true;
+    if (trimmedText.match(/.*\ do \|.*\|$/)) return true;
 
     return false;
 }
