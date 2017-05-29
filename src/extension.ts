@@ -43,7 +43,7 @@ async function endwiseEnter() {
         });
     } else {
         await vscode.commands.executeCommand('lineBreakInsert');
-        await vscode.commands.executeCommand('cursorWordStartRight');
+        await vscode.commands.executeCommand('cursorRight');
         // TODO: Depending on the context where the line break was set, the indentation off in some cases.
     }
 }
