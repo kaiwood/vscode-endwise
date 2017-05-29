@@ -16,21 +16,20 @@ export function activate(context: vscode.ExtensionContext) {
 
     let cmdEnter = vscode.commands.registerCommand('endwise.cmdEnter', async () => {
         await vscode.commands.executeCommand('cursorEnd');
-        endwiseEnter();
+        endwiseEnter(true);
     });
 
     context.subscriptions.push(enter);
 }
 
-async function endwiseEnter() {
+async function endwiseEnter(calledWithModifier = false) {
     const editor: vscode.TextEditor = vscode.window.activeTextEditor;
-
     const lineNumber: number = editor.selection.active.line;
     const columnNumber: number = editor.selection.active.character;
     const lineText: string = editor.document.lineAt(lineNumber).text;
     const lineLength: number = lineText.length;
 
-    if (shouldAddEnd(lineText)) {
+    if (shouldAddEnd(lineText, columnNumber, calledWithModifier)) {
         await editor.edit((textEditor) => {
             textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}end`);
         });
@@ -44,11 +43,18 @@ async function endwiseEnter() {
     } else {
         await vscode.commands.executeCommand('lineBreakInsert');
         await vscode.commands.executeCommand('cursorRight');
+        // await vscode.commands.executeCommand('cursorWordStartRight');
         // TODO: Depending on the context where the line break was set, the indentation off in some cases.
     }
 }
 
-function shouldAddEnd(lineText) {
+function shouldAddEnd(lineText, columnNumber, calledWithModifier) {
+
+    // Do not add "end" if enter is pressed in the middle of a line, *except* when a modifier key is used
+    if (!calledWithModifier && lineText.length > columnNumber) {
+        return false
+    }
+
     const trimmedText: string = lineText.trim();
     const startsWithConditions: string[] = [
         "if", "unless", "while", "for", "do", "def", "class", "module", "case"
@@ -67,11 +73,11 @@ function shouldAddEnd(lineText) {
 function shouldUnindent(lineText) {
     const trimmedText: string = lineText.trim();
     const unindentConditions: string[] = [
-      "else", "elsif ", "when"
+        "else", "elsif ", "when"
     ];
 
     for (let condition of unindentConditions) {
-      if (trimmedText.startsWith(condition)) return true;
+        if (trimmedText.startsWith(condition)) return true;
     }
 
     return false;
