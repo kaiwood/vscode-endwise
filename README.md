@@ -8,6 +8,6 @@ Just hit `enter` to get your block automagically closed. `ctrl+enter` / `cmd+ent
 
 ## TODO
 
-- [ ] Wisely detect already closed blocks to skip additional "end"'s
+- [X] Wisely detect already closed blocks to skip additional "end"'s
 - [ ] Add support for more languages (Lua, Bash, etc.)
 - [ ] Add a gif with code that actually makes sense 🙄
