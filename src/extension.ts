@@ -48,9 +48,16 @@ async function endwiseEnter(calledWithModifier = false) {
         });
     } else {
         await vscode.commands.executeCommand('lineBreakInsert');
-        await vscode.commands.executeCommand('cursorRight');
-        // await vscode.commands.executeCommand('cursorWordStartRight');
-        // TODO: Depending on the context where the line break was set, the indentation off in some cases.
+        if (columnNumber === lineText.length) {
+            await vscode.commands.executeCommand('cursorWordEndRight');
+        } else {
+            await vscode.commands.executeCommand('cursorRight');
+            let newLine = await editor.document.lineAt(editor.selection.active.line).text;
+            if (newLine[1] === " " && newLine.trim().length > 0) {
+                await vscode.commands.executeCommand('cursorWordEndRight');
+                await vscode.commands.executeCommand('cursorWordStartLeft');
+            }
+        }
     }
 }
 
