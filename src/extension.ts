@@ -30,7 +30,7 @@ async function endwiseEnter(calledWithModifier = false) {
     const lineText: string = editor.document.lineAt(lineNumber).text;
     const lineLength: number = lineText.length;
     const possibleClosings = [];
-    for (let i = lineNumber; i < lineCount; ++i) {
+    for (let i = lineNumber + 1; i < lineCount; ++i) {
         let additionalLine = await editor.document.lineAt(i);
         possibleClosings.push(additionalLine.text);
     }
@@ -65,23 +65,31 @@ async function endwiseEnter(calledWithModifier = false) {
  * Check if a closing "end" should be set
  */
 function shouldAddEnd(lineText, columnNumber, calledWithModifier, possibleClosings) {
+    const trimmedText: string = lineText.trim();
+    const startsWithConditions: string[] = [
+        "if", "unless", "while", "for", "do", "def", "class", "module", "case"
+    ];
+
 
     // Do not add "end" if enter is pressed in the middle of a line, *except* when a modifier key is used
     if (!calledWithModifier && lineText.length > columnNumber) {
         return false;
     }
 
-    // Do not add a closing "end" if there is one on the same indentaion level
+    // Do not add a closing "end" if there is one on the same indentation level
     for (let closing of possibleClosings) {
+        // Check if another block got opened
+        let breakEarly = false;
+        for (let condition of startsWithConditions) {
+            if (closing.trim().startsWith(condition)) breakEarly = true;
+        }
+        if (breakEarly) break;
+
         if (closing === indentationFor(lineText) + "end") {
             return false;
         }
     }
 
-    const trimmedText: string = lineText.trim();
-    const startsWithConditions: string[] = [
-        "if", "unless", "while", "for", "do", "def", "class", "module", "case"
-    ];
 
     for (let condition of startsWithConditions) {
         if (trimmedText.startsWith(`${condition} `)) return true;
