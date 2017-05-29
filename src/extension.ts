@@ -29,6 +29,7 @@ async function endwiseEnter(calledWithModifier = false) {
     const lineCount: number = editor.document.lineCount;
     const lineText: string = editor.document.lineAt(lineNumber).text;
     const lineLength: number = lineText.length;
+
     const possibleClosings = [];
     for (let i = lineNumber + 1; i < lineCount; ++i) {
         let additionalLine = await editor.document.lineAt(i);
@@ -81,7 +82,7 @@ function shouldAddEnd(lineText, columnNumber, calledWithModifier, possibleClosin
         // Check if another block got opened
         let breakEarly = false;
         for (let condition of startsWithConditions) {
-            if (closing.trim().startsWith(condition)) breakEarly = true;
+            if (closing.startsWith(indentationFor(lineText) + condition)) breakEarly = true;
         }
         if (breakEarly) break;
 
