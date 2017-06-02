@@ -7,7 +7,6 @@
 
 'use strict';
 import * as vscode from 'vscode';
-const isBalanced = require("is-balanced");
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -30,9 +29,14 @@ async function endwiseEnter(calledWithModifier = false) {
     const lineCount: number = editor.document.lineCount;
     const lineText: string = editor.document.lineAt(lineNumber).text;
     const lineLength: number = lineText.length;
-    const text: string = await editor.document.getText();
 
-    if (shouldAddEnd(lineText, columnNumber, lineNumber, calledWithModifier, text)) {
+    const possibleClosings = [];
+    for (let i = lineNumber + 1; i < lineCount; ++i) {
+        let additionalLine = await editor.document.lineAt(i);
+        possibleClosings.push(additionalLine.text);
+    }
+
+    if (shouldAddEnd(lineText, columnNumber, calledWithModifier, possibleClosings)) {
         await editor.edit((textEditor) => {
             textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}end`);
         });
@@ -61,26 +65,39 @@ async function endwiseEnter(calledWithModifier = false) {
 /**
  * Check if a closing "end" should be set
  */
-function shouldAddEnd(lineText, columnNumber, lineNumber, calledWithModifier, text) {
-    const openings = [
-        /^\s*?if/, /^\s*?unless/, "while", "for", "do", "def", "class", "module", "case"
+function shouldAddEnd(lineText, columnNumber, calledWithModifier, possibleClosings) {
+    const trimmedText: string = lineText.trim();
+    const startsWithConditions: string[] = [
+        "if", "unless", "while", "for", "do", "def", "class", "module", "case"
     ];
+
 
     // Do not add "end" if enter is pressed in the middle of a line, *except* when a modifier key is used
     if (!calledWithModifier && lineText.length > columnNumber) {
         return false;
     }
 
-    for (let condition of openings) {
-        if (lineText.match(condition)) {
-            // Do not add "end" if code structure is already balanced
-            if (isBalanced(text, openings, ["end"])) {
-                return false;
-            } else {
-                return true;
-            }
-        };
+    // Do not add a closing "end" if there is one on the same indentation level
+    for (let closing of possibleClosings) {
+        // Check if another block got opened
+        let breakEarly = false;
+        for (let condition of startsWithConditions) {
+            if (closing.startsWith(indentationFor(lineText) + condition)) breakEarly = true;
+        }
+        if (breakEarly) break;
+
+        if (closing === indentationFor(lineText) + "end") {
+            return false;
+        }
     }
+
+
+    for (let condition of startsWithConditions) {
+        if (trimmedText.startsWith(`${condition} `)) return true;
+    }
+
+    if (trimmedText.endsWith(" do")) return true;
+    if (trimmedText.match(/.*\ do \|.*\|$/)) return true;
 
     return false;
 }
