@@ -5,6 +5,7 @@
     "version": "0.3.4",
     "preview": true,
     "publisher": "kaiwood",
+    "license": "MIT",
     "bugs": "https://github.com/kaiwood/vscode-endwise/issues",
     "repository": {
         "type": "git",
