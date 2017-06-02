@@ -63,7 +63,7 @@ async function endwiseEnter(calledWithModifier = false) {
  */
 function shouldAddEnd(lineText, columnNumber, lineNumber, calledWithModifier, text) {
     const openings = [
-        /^\s*?if/, /^\s*?unless/, "while", "for", "do", "def", "class", "module", "case"
+        /^\s*?if/, /^\s*?unless/, "while", "for", "do", "def", "class", "module", "case", "begin", "until"
     ];
 
     // Do not add "end" if enter is pressed in the middle of a line, *except* when a modifier key is used
