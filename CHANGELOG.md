@@ -1,7 +1,9 @@
-# Change Log
-All notable changes to the "endwise" extension will be documented in this file.
+# Release notes
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## v1.0.1
 
-## [Unreleased]
-- Initial release
+Remove now unused dependency, add a proper changelog
+
+## v1.0.0
+
+First non-prerelease version
