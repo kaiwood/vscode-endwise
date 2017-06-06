@@ -30,9 +30,8 @@ async function endwiseEnter(calledWithModifier = false) {
     const lineCount: number = editor.document.lineCount;
     const lineText: string = editor.document.lineAt(lineNumber).text;
     const lineLength: number = lineText.length;
-    const text: string = await editor.document.getText();
 
-    if (shouldAddEnd(lineText, columnNumber, lineNumber, calledWithModifier, text)) {
+    if (shouldAddEnd(lineText, columnNumber, lineNumber, calledWithModifier, editor)) {
         await editor.edit((textEditor) => {
             textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}end`);
         });
@@ -61,10 +60,12 @@ async function endwiseEnter(calledWithModifier = false) {
 /**
  * Check if a closing "end" should be set
  */
-function shouldAddEnd(lineText, columnNumber, lineNumber, calledWithModifier, text) {
+function shouldAddEnd(lineText, columnNumber, lineNumber, calledWithModifier, editor) {
     const openings = [
         /^\s*?if/, /^\s*?unless/, "while", "for", "do", "def", "class", "module", "case", "begin", "until"
     ];
+
+    const currentIndentation = indentationFor(lineText);
 
     // Do not add "end" if enter is pressed in the middle of a line, *except* when a modifier key is used
     if (!calledWithModifier && lineText.length > columnNumber) {
@@ -73,12 +74,39 @@ function shouldAddEnd(lineText, columnNumber, lineNumber, calledWithModifier, te
 
     for (let condition of openings) {
         if (lineText.match(condition)) {
+
+            const LIMIT = 100;
+            let stackCount = 0;
+
             // Do not add "end" if code structure is already balanced
-            if (isBalanced(text, openings, ["end"])) {
-                return false;
-            } else {
-                return true;
+            for (let ln = lineNumber; ln <= lineNumber+LIMIT; ln++) {
+                try {
+                    let line = editor.document.lineAt(ln+1).text;
+
+                    if (currentIndentation === indentationFor(line)) {
+                        // If another opening is found, increment the stack counter
+                        for (let innerCondition of openings) {
+                            if (line.match(innerCondition)) {
+                                stackCount += 1;
+                                break;
+                            }
+                        }
+
+                        if (line.trim().startsWith("end")) {
+                            if (stackCount > 0) {
+                                stackCount -= 1;
+                                continue;
+                            } else {
+                                return false;
+                            }
+                        }
+                    }
+
+                } catch(err) {
+                    return true;
+                }
             }
+            return true;
         };
     }
 
