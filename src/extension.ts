@@ -61,8 +61,21 @@ async function endwiseEnter(calledWithModifier = false) {
  * Check if a closing "end" should be set
  */
 function shouldAddEnd(lineText, columnNumber, lineNumber, calledWithModifier, editor) {
+    // const openings = [
+    //     /^\s*?if/, /^\s*?unless/, "while", "for", "do", "def", "class", "module", "case", "begin", "until"
+    // ];
     const openings = [
-        /^\s*?if/, /^\s*?unless/, "while", "for", "do", "def", "class", "module", "case", "begin", "until"
+        /^\s*?if/,
+        /^\s*?unless/,
+        /^\s*?while/,
+        /^\s*?for/,
+        /\s?do(\n|\s\|.*\|\n)/,
+        /^\s*?def/,
+        /^\s*?class/,
+        /^\s*?module/,
+        /^\s*?case/,
+        /^\s*?begin/,
+        /^\s*?until/
     ];
 
     const currentIndentation = indentationFor(lineText);
@@ -100,6 +113,8 @@ function shouldAddEnd(lineText, columnNumber, lineNumber, calledWithModifier, ed
                                 return false;
                             }
                         }
+                    } else if (currentIndentation > indentationFor(line)) {
+                        if (line.trim().startsWith("end")) return true; // If there is an "end" on a smaller indentation level, always close statement.
                     }
 
                 } catch(err) {
