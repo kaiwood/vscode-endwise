@@ -36,15 +36,11 @@ async function endwiseEnter(calledWithModifier = false) {
         });
         await vscode.commands.executeCommand('cursorUp');
         vscode.commands.executeCommand('editor.action.insertLineAfter');
-    } else if (shouldUnindent(lineText)) {
-        await vscode.commands.executeCommand('editor.action.outdentLines');
-        await editor.edit((textEditor) => {
-            textEditor.insert(new vscode.Position(lineNumber, lineLength), `\n${indentationFor(lineText)}`);
-        });
     } else {
         await vscode.commands.executeCommand('lineBreakInsert');
         if (columnNumber === lineText.length) {
-            await vscode.commands.executeCommand('cursorWordEndRight');
+            await vscode.commands.executeCommand("cursorEnd");
+            await vscode.commands.executeCommand('cursorDown');
         } else {
             await vscode.commands.executeCommand('cursorRight');
             let newLine = await editor.document.lineAt(editor.selection.active.line).text;
@@ -119,22 +115,6 @@ function shouldAddEnd(lineText, columnNumber, lineNumber, calledWithModifier, ed
             }
             return true;
         };
-    }
-
-    return false;
-}
-
-/**
- * Check if the line should unindent because of other keywords
- */
-function shouldUnindent(lineText) {
-    const trimmedText: string = lineText.trim();
-    const unindentConditions: string[] = [
-        "else", "elsif ", "when"
-    ];
-
-    for (let condition of unindentConditions) {
-        if (trimmedText.startsWith(condition)) return true;
     }
 
     return false;

@@ -1,5 +1,9 @@
 # Release notes
 
+## v1.1.0
+
+Simplify unindentation
+
 ## v1.0.1
 
 Remove now unused dependency, add a proper changelog
