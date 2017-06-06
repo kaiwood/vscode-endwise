@@ -7,7 +7,6 @@
 
 'use strict';
 import * as vscode from 'vscode';
-const isBalanced = require("is-balanced");
 
 export function activate(context: vscode.ExtensionContext) {
 
