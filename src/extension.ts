@@ -61,15 +61,12 @@ async function endwiseEnter(calledWithModifier = false) {
  * Check if a closing "end" should be set
  */
 function shouldAddEnd(lineText, columnNumber, lineNumber, calledWithModifier, editor) {
-    // const openings = [
-    //     /^\s*?if/, /^\s*?unless/, "while", "for", "do", "def", "class", "module", "case", "begin", "until"
-    // ];
     const openings = [
         /^\s*?if/,
         /^\s*?unless/,
         /^\s*?while/,
         /^\s*?for/,
-        /\s?do(\n|\s\|.*\|\n)/,
+        /\s?do($|\s\|.*\|$)/,
         /^\s*?def/,
         /^\s*?class/,
         /^\s*?module/,
