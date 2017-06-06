@@ -2,10 +2,11 @@
     "name": "endwise",
     "displayName": "endwise",
     "description": "Wisely add \"end\" in Ruby.",
-    "version": "0.4.2",
-    "preview": true,
+    "version": "1.0.0",
+    "preview": false,
     "publisher": "kaiwood",
     "license": "MIT",
+    "icon": "images/icon.png",
     "bugs": "https://github.com/kaiwood/vscode-endwise/issues",
     "repository": {
         "type": "git",
