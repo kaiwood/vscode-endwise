@@ -40,7 +40,7 @@ async function endwiseEnter(calledWithModifier = false) {
         await vscode.commands.executeCommand('lineBreakInsert');
         if (columnNumber === lineText.length) {
             await vscode.commands.executeCommand("cursorEnd");
-            await vscode.commands.executeCommand('cursorDown');
+            await vscode.commands.executeCommand('cursorWordStartRight');
         } else {
             await vscode.commands.executeCommand('cursorRight');
             let newLine = await editor.document.lineAt(editor.selection.active.line).text;
