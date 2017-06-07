@@ -1,5 +1,9 @@
 # Release notes
 
+## v1.1.1
+
+Keep indented cursor position on lines containing only whitespace
+
 ## v1.1.0
 
 Simplify unindentation
