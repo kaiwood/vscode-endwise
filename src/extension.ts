@@ -69,11 +69,13 @@ function shouldAddEnd(lineText, columnNumber, lineNumber, calledWithModifier, ed
         /^\s*?begin/,
         /^\s*?until/
     ];
+    const singleLineDefCondition = /;\s*end[\s;]*$/;
 
     const currentIndentation = indentationFor(lineText);
 
     // Do not add "end" if enter is pressed in the middle of a line, *except* when a modifier key is used
-    if (!calledWithModifier && lineText.length > columnNumber) {
+    // Also, do not add "end" for single line definition
+    if ((!calledWithModifier && lineText.length > columnNumber) || lineText.match(singleLineDefCondition)) {
         return false;
     }
 
