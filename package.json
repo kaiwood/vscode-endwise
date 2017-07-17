@@ -2,7 +2,7 @@
     "name": "endwise",
     "displayName": "endwise",
     "description": "Wisely add \"end\" in Ruby.",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "preview": false,
     "publisher": "kaiwood",
     "license": "MIT",
@@ -34,6 +34,11 @@
                 "key": "ctrl+enter",
                 "mac": "cmd+enter",
                 "when": "editorTextFocus && editorLangId == 'ruby'"
+            },
+            {
+                "command": "endwise.checkForAcceptSelectedSuggestion",
+                "key": "enter",
+                "when": "editorTextFocus && editorLangId == 'ruby' && suggestWidgetVisible && suggestionMakesTextEdit"
             }
         ]
     },

@@ -19,7 +19,22 @@ export function activate(context: vscode.ExtensionContext) {
         await endwiseEnter(true);
     });
 
+    // We have to check "acceptSuggestionOnEnter" is set to a value !== "off" if the suggest widget is currently visible,
+    // otherwise the suggestion won't be triggered because of the overloaded enter key.
+    let checkForAcceptSelectedSuggestion = vscode.commands.registerCommand("endwise.checkForAcceptSelectedSuggestion", async () => {
+        const config = vscode.workspace.getConfiguration();
+        const suggestionOnEnter = config.get("editor.acceptSuggestionOnEnter");
+
+        if (suggestionOnEnter !== "off") {
+            await vscode.commands.executeCommand("acceptSelectedSuggestion");
+        } else {
+            await vscode.commands.executeCommand("endwise.enter");
+        }
+    });
+
     context.subscriptions.push(enter);
+    context.subscriptions.push(cmdEnter);
+    context.subscriptions.push(checkForAcceptSelectedSuggestion);
 }
 
 async function endwiseEnter(calledWithModifier = false) {

@@ -1,5 +1,9 @@
 # Release notes
 
+## v1.2.1
+
+* Now takes the setting `editor.acceptSuggestionOnEnter` into account and gives it precedence for the overloaded `enter` key.
+
 ## v1.2.0
 
 * Take single line definitions (`def foo; puts "bar"; end`) into account, credits to [@jittrfunc](https://github.com/jittrfunc) / [#3](https://github.com/kaiwood/vscode-endwise/pull/3)
