@@ -1,58 +1,58 @@
 {
-    "name": "endwise",
-    "displayName": "endwise",
-    "description": "Wisely add \"end\" in Ruby.",
-    "version": "1.2.2",
-    "preview": false,
-    "publisher": "kaiwood",
-    "license": "MIT",
-    "icon": "images/icon.png",
-    "bugs": "https://github.com/kaiwood/vscode-endwise/issues",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/kaiwood/vscode-endwise"
-    },
-    "engines": {
-        "vscode": "^1.12.0"
-    },
-    "categories": [
-        "Other"
-    ],
-    "activationEvents": [
-        "onLanguage:ruby"
-    ],
-    "main": "./out/src/extension",
-    "contributes": {
-        "keybindings": [
-            {
-                "command": "endwise.enter",
-                "key": "enter",
-                "when": "editorTextFocus && editorLangId == 'ruby' && vim.mode != 'SearchInProgressMode'"
-            },
-            {
-                "command": "endwise.cmdEnter",
-                "key": "ctrl+enter",
-                "mac": "cmd+enter",
-                "when": "editorTextFocus && editorLangId == 'ruby' && vim.mode != 'SearchInProgressMode'"
-            },
-            {
-                "command": "endwise.checkForAcceptSelectedSuggestion",
-                "key": "enter",
-                "when": "editorTextFocus && editorLangId == 'ruby' && suggestWidgetVisible && suggestionMakesTextEdit"
-            }
-        ]
-    },
-    "scripts": {
-        "vscode:prepublish": "tsc -p ./",
-        "compile": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "node ./node_modules/vscode/bin/test"
-    },
-    "devDependencies": {
-        "typescript": "^2.0.3",
-        "vscode": "^1.0.0",
-        "mocha": "^2.3.3",
-        "@types/node": "^6.0.40",
-        "@types/mocha": "^2.2.32"
-    }
+  "name": "endwise",
+  "displayName": "endwise",
+  "description": "Wisely add \"end\" in Ruby.",
+  "version": "1.2.3",
+  "preview": false,
+  "publisher": "kaiwood",
+  "license": "MIT",
+  "icon": "images/icon.png",
+  "bugs": "https://github.com/kaiwood/vscode-endwise/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaiwood/vscode-endwise"
+  },
+  "engines": {
+    "vscode": "^1.12.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:ruby"
+  ],
+  "main": "./out/src/extension",
+  "contributes": {
+    "keybindings": [
+      {
+        "command": "endwise.enter",
+        "key": "enter",
+        "when": "editorTextFocus && editorLangId == 'ruby' && vim.mode != 'SearchInProgressMode' && vim.mode != 'CommandlineInProgress' "
+      },
+      {
+        "command": "endwise.cmdEnter",
+        "key": "ctrl+enter",
+        "mac": "cmd+enter",
+        "when": "editorTextFocus && editorLangId == 'ruby' && vim.mode != 'SearchInProgressMode' && vim.mode != 'CommandlineInProgress^' "
+      },
+      {
+        "command": "endwise.checkForAcceptSelectedSuggestion",
+        "key": "enter",
+        "when": "editorTextFocus && editorLangId == 'ruby' && suggestWidgetVisible && suggestionMakesTextEdit"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "tsc -p ./",
+    "compile": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "typescript": "^2.0.3",
+    "vscode": "^1.0.0",
+    "mocha": "^2.3.3",
+    "@types/node": "^6.0.40",
+    "@types/mocha": "^2.2.32"
+  }
 }
