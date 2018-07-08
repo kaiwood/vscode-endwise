@@ -89,17 +89,17 @@ function shouldAddEnd(
   editor
 ) {
   const openings = [
-    /^\s*?if/,
-    /^\s*?unless/,
-    /^\s*?while/,
-    /^\s*?for/,
+    /^\s*?if(\s|\()/,
+    /^\s*?unless(\s|\()/,
+    /^\s*?while(\s|\()/,
+    /^\s*?for(\s|\()/,
     /\s?do($|\s\|.*\|$)/,
-    /^\s*?def/,
-    /^\s*?class/,
-    /^\s*?module/,
-    /^\s*?case/,
-    /^\s*?begin/,
-    /^\s*?until/
+    /^\s*?def\s/,
+    /^\s*?class\s/,
+    /^\s*?module\s/,
+    /^\s*?case(\s|\()/,
+    /^\s*?begin\s/,
+    /^\s*?until(\s|\()/
   ];
   const singleLineDefCondition = /;\s*end[\s;]*$/;
 

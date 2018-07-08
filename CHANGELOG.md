@@ -1,5 +1,9 @@
 # Release notes
 
+## v1.2.4
+
+- Better regex for various Ruby related keywords
+
 ## v1.2.3
 
 - Fix for users of the VSCodeVim extension, which added a new mode that colides with our overloaded `enter` key.
