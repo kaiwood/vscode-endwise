@@ -116,7 +116,7 @@ function shouldAddEnd(
 
   for (let condition of openings) {
     if (lineText.match(condition)) {
-      const LIMIT = 100;
+      const LIMIT = 100000;
       let stackCount = 0;
 
       // Do not add "end" if code structure is already balanced
@@ -148,7 +148,7 @@ function shouldAddEnd(
           return true;
         }
       }
-      return true;
+      return false;
     }
   }
 

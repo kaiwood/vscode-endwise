@@ -1,5 +1,10 @@
 # Release notes
 
+## v1.3.0
+
+- Raise line limit to better handle huge Ruby files
+- Default to **not** putting an "end" if this limit is reached
+
 ## v1.2.4
 
 - Better regex for various Ruby related keywords
