@@ -72,7 +72,7 @@ async function endwiseEnter(calledWithModifier = false) {
         .text;
       if (newLine[1] === " " && newLine.trim().length > 0) {
         await vscode.commands.executeCommand("cursorWordEndRight");
-        await vscode.commands.executeCommand("cursorWordStartLeft");
+        await vscode.commands.executeCommand("cursorHome");
       }
     }
   }
