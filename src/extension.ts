@@ -93,7 +93,7 @@ function shouldAddEnd(
     /^\s*?unless(\s|\()/,
     /^\s*?while(\s|\()/,
     /^\s*?for(\s|\()/,
-    /\s?do($|\s\|.*\|$)/,
+    /\s?do(\s?$|\s\|.*\|\s?$)/,
     /^\s*?def\s/,
     /^\s*?class\s/,
     /^\s*?module\s/,
