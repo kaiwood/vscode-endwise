@@ -110,38 +110,36 @@ function shouldAddEnd(lineText, columnNumber, lineNumber, calledWithModifier, ed
 
     const LIMIT = 100000;
     let stackCount = 0;
+    let documentLineCount = editor.document.lineCount
 
     // Do not add "end" if code structure is already balanced
     for (let ln = lineNumber; ln <= lineNumber + LIMIT; ln++) {
-      try {
-        let line = editor.document.lineAt(ln + 1).text;
-        let lineStartsWithEnd = line.trim().startsWith("end");
+      // Close if we are at the end of the document
+      if (documentLineCount <= ln + 1) return true;
 
-        // Always close the statement if there is another closing found on a smaller indentation level
-        if (currentIndentation > indentationFor(line) && lineStartsWithEnd) return true;
+      let line = editor.document.lineAt(ln + 1).text;
+      let lineStartsWithEnd = line.trim().startsWith("end");
 
-        if (currentIndentation === indentationFor(line)) {
-          // If another opening is found, increment the stack counter
-          for (let innerCondition of openings) {
-            if (line.match(innerCondition)) {
-              stackCount += 1;
-              break;
-            }
+      // Always close the statement if there is another closing found on a smaller indentation level
+      if (currentIndentation > indentationFor(line) && lineStartsWithEnd) return true;
+
+      if (currentIndentation === indentationFor(line)) {
+        // If another opening is found, increment the stack counter
+        for (let innerCondition of openings) {
+          if (line.match(innerCondition)) {
+            stackCount += 1;
+            break;
           }
-
-          if (lineStartsWithEnd && stackCount > 0) {
-            stackCount -= 1;
-            continue;
-          } else if (lineStartsWithEnd) {
-            return false;
-          }
-
         }
-      } catch (err) {
-        return true;
+
+        if (lineStartsWithEnd && stackCount > 0) {
+          stackCount -= 1;
+          continue;
+        } else if (lineStartsWithEnd) {
+          return false;
+        }
       }
     }
-
   }
 
   return false;
