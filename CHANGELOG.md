@@ -1,5 +1,9 @@
 # Release notes
 
+## v1.4.0
+
+- Allow additional typed space after blocks (Issue #13)
+
 ## v1.3.0
 
 - Raise line limit to better handle huge Ruby files
