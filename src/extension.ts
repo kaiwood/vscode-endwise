@@ -81,13 +81,7 @@ async function endwiseEnter(calledWithModifier = false) {
 /**
  * Check if a closing "end" should be set
  */
-function shouldAddEnd(
-  lineText,
-  columnNumber,
-  lineNumber,
-  calledWithModifier,
-  editor
-) {
+function shouldAddEnd(lineText, columnNumber, lineNumber, calledWithModifier, editor) {
   const openings = [
     /^\s*?if(\s|\()/,
     /^\s*?unless(\s|\()/,
@@ -101,55 +95,53 @@ function shouldAddEnd(
     /^\s*?begin\s/,
     /^\s*?until(\s|\()/
   ];
+
   const singleLineDefCondition = /;\s*end[\s;]*$/;
 
   const currentIndentation = indentationFor(lineText);
 
-  // Do not add "end" if enter is pressed in the middle of a line, *except* when a modifier key is used
-  // Also, do not add "end" for single line definition
-  if (
-    (!calledWithModifier && lineText.length > columnNumber) ||
-    lineText.match(singleLineDefCondition)
-  ) {
-    return false;
-  }
+  // Do not close if enter key is pressed in the middle of a line, *except* when a modifier key is used
+  if (!calledWithModifier && lineText.length > columnNumber) return false;
+  // Also, do not close on single line definitions
+  if (lineText.match(singleLineDefCondition)) return false;
 
   for (let condition of openings) {
-    if (lineText.match(condition)) {
-      const LIMIT = 100000;
-      let stackCount = 0;
+    if (!lineText.match(condition)) continue;
 
-      // Do not add "end" if code structure is already balanced
-      for (let ln = lineNumber; ln <= lineNumber + LIMIT; ln++) {
-        try {
-          let line = editor.document.lineAt(ln + 1).text;
+    const LIMIT = 100000;
+    let stackCount = 0;
 
-          if (currentIndentation === indentationFor(line)) {
-            // If another opening is found, increment the stack counter
-            for (let innerCondition of openings) {
-              if (line.match(innerCondition)) {
-                stackCount += 1;
-                break;
-              }
+    // Do not add "end" if code structure is already balanced
+    for (let ln = lineNumber; ln <= lineNumber + LIMIT; ln++) {
+      try {
+        let line = editor.document.lineAt(ln + 1).text;
+        let lineStartsWithEnd = line.trim().startsWith("end");
+
+        // Always close the statement if there is another closing found on a smaller indentation level
+        if (currentIndentation > indentationFor(line) && lineStartsWithEnd) return true;
+
+        if (currentIndentation === indentationFor(line)) {
+          // If another opening is found, increment the stack counter
+          for (let innerCondition of openings) {
+            if (line.match(innerCondition)) {
+              stackCount += 1;
+              break;
             }
-
-            if (line.trim().startsWith("end")) {
-              if (stackCount > 0) {
-                stackCount -= 1;
-                continue;
-              } else {
-                return false;
-              }
-            }
-          } else if (currentIndentation > indentationFor(line)) {
-            if (line.trim().startsWith("end")) return true; // If there is an "end" on a smaller indentation level, always close statement.
           }
-        } catch (err) {
-          return true;
+
+          if (lineStartsWithEnd && stackCount > 0) {
+            stackCount -= 1;
+            continue;
+          } else if (lineStartsWithEnd) {
+            return false;
+          }
+
         }
+      } catch (err) {
+        return true;
       }
-      return false;
     }
+
   }
 
   return false;
