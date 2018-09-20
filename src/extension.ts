@@ -48,6 +48,24 @@ export function activate(context: vscode.ExtensionContext) {
 /**
  * The plugin itself
  */
+
+const OPENINGS = [
+  /^\s*?if(\s|\()/,
+  /^\s*?unless(\s|\()/,
+  /^\s*?while(\s|\()/,
+  /^\s*?for(\s|\()/,
+  /\s?do(\s?$|\s\|.*\|\s?$)/,
+  /^\s*?def\s/,
+  /^\s*?class\s/,
+  /^\s*?module\s/,
+  /^\s*?case(\s|\()/,
+  /^\s*?begin\s/,
+  /^\s*?until(\s|\()/
+];
+
+const SINGLE_LINE_DEFINITION = /;\s*end[\s;]*$/;
+const LINE_PARSE_LIMIT = 100000;
+
 async function endwiseEnter(calledWithModifier = false) {
   const editor: vscode.TextEditor = vscode.window.activeTextEditor;
   const lineNumber: number = editor.selection.active.line;
@@ -101,38 +119,21 @@ async function endwiseEnter(calledWithModifier = false) {
    * Check if a closing "end" should be set. Pretty much the meat of this plugin.
    */
   function shouldAddEnd() {
-    const openings = [
-      /^\s*?if(\s|\()/,
-      /^\s*?unless(\s|\()/,
-      /^\s*?while(\s|\()/,
-      /^\s*?for(\s|\()/,
-      /\s?do(\s?$|\s\|.*\|\s?$)/,
-      /^\s*?def\s/,
-      /^\s*?class\s/,
-      /^\s*?module\s/,
-      /^\s*?case(\s|\()/,
-      /^\s*?begin\s/,
-      /^\s*?until(\s|\()/
-    ];
-
-    const singleLineDefCondition = /;\s*end[\s;]*$/;
-
     const currentIndentation = indentationFor(lineText);
 
     // Do not close if enter key is pressed in the middle of a line, *except* when a modifier key is used
     if (!calledWithModifier && lineText.length > columnNumber) return false;
     // Also, do not close on single line definitions
-    if (lineText.match(singleLineDefCondition)) return false;
+    if (lineText.match(SINGLE_LINE_DEFINITION)) return false;
 
-    for (let condition of openings) {
+    for (let condition of OPENINGS) {
       if (!lineText.match(condition)) continue;
 
-      const LIMIT = 100000;
       let stackCount = 0;
       let documentLineCount = editor.document.lineCount;
 
       // Do not add "end" if code structure is already balanced
-      for (let ln = lineNumber; ln <= lineNumber + LIMIT; ln++) {
+      for (let ln = lineNumber; ln <= lineNumber + LINE_PARSE_LIMIT; ln++) {
         // Close if we are at the end of the document
         if (documentLineCount <= ln + 1) return true;
 
@@ -146,7 +147,7 @@ async function endwiseEnter(calledWithModifier = false) {
 
         if (currentIndentation === indentationFor(line)) {
           // If another opening is found, increment the stack counter
-          for (let innerCondition of openings) {
+          for (let innerCondition of OPENINGS) {
             if (line.match(innerCondition)) {
               stackCount += 1;
               break;
