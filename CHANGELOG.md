@@ -1,5 +1,9 @@
 # Release notes
 
+## v1.4.1
+
+- Fix indentation correction for newlines after brackets and braces (Issue #14)
+
 ## v1.4.0
 
 - Allow additional typed space after blocks (Issue #13)
