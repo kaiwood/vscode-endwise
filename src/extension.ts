@@ -98,20 +98,27 @@ async function endwiseEnter(calledWithModifier = false) {
    * Insert a linebreak, no closing, correct cursor position
    */
   async function linebreak() {
+    // Insert \n
     await vscode.commands.executeCommand("lineBreakInsert");
-    if (columnNumber === lineText.length) {
+
+    // Move to the right to set the cursor to the next line
+    await vscode.commands.executeCommand("cursorRight");
+
+    // Get current line
+    let newLine = await editor.document.lineAt(editor.selection.active.line)
+      .text;
+
+    // If it's blank, don't do anything
+    if (newLine.length === 0) return;
+
+    // On lines containing only whitespace, we need to move to the right
+    // to have the cursor at the correct indentation level.
+    // Otherwise, we set the cursor to the beginning of the first word.
+    if (newLine.match(/^\s+$/)) {
       await vscode.commands.executeCommand("cursorEnd");
-      await vscode.commands.executeCommand("cursorWordStartRight");
     } else {
-      await vscode.commands.executeCommand("cursorRight");
-
-      let newLine = await editor.document.lineAt(editor.selection.active.line)
-        .text;
-
-      if (newLine[1] === " " && newLine.trim().length > 0) {
-        await vscode.commands.executeCommand("cursorWordEndRight");
-        await vscode.commands.executeCommand("cursorHome");
-      }
+      await vscode.commands.executeCommand("cursorWordEndRight");
+      await vscode.commands.executeCommand("cursorHome");
     }
   }
 
