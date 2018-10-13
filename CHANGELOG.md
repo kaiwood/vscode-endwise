@@ -1,5 +1,9 @@
 # Release notes
 
+## v1.4.2
+
+- Fix behaviour in Normal mode when using the Vim plugin
+
 ## v1.4.1
 
 - Fix indentation correction for newlines after brackets and braces (Issue #14)
