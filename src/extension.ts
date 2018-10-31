@@ -55,7 +55,7 @@ const OPENINGS = [
   /^\s*?while(\s|\()/,
   /^\s*?for(\s|\()/,
   /\s?do(\s?$|\s\|.*\|\s?$)/,
-  /^\s*?def\s/,
+  /^\s*?private ?def\s/,
   /^\s*?class\s/,
   /^\s*?module\s/,
   /^\s*?case(\s|\()/,
