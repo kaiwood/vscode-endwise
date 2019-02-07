@@ -1,7 +1,7 @@
 {
   "name": "endwise",
   "displayName": "endwise",
-  "description": "Wisely add \"end\" in Ruby.",
+  "description": "Wisely add \"end\" in Ruby & Crystal.",
   "version": "1.4.2",
   "preview": false,
   "publisher": "kaiwood",
@@ -19,7 +19,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onLanguage:ruby"
+    "onLanguage:ruby",
+    "onLanguage:crystal"
   ],
   "main": "./out/src/extension",
   "contributes": {
@@ -27,18 +28,18 @@
       {
         "command": "endwise.enter",
         "key": "enter",
-        "when": "editorTextFocus && editorLangId == 'ruby' && vim.mode != 'Normal' && vim.mode != 'SearchInProgressMode' && vim.mode != 'CommandlineInProgress' "
+        "when": "editorTextFocus && editorLangId =~ /ruby|crystal/ && vim.mode != 'Normal' && vim.mode != 'SearchInProgressMode' && vim.mode != 'CommandlineInProgress' "
       },
       {
         "command": "endwise.cmdEnter",
         "key": "ctrl+enter",
         "mac": "cmd+enter",
-        "when": "editorTextFocus && editorLangId == 'ruby' && vim.mode != 'Normal' && vim.mode != 'SearchInProgressMode' && vim.mode != 'CommandlineInProgress^' "
+        "when": "editorTextFocus && editorLangId =~ /ruby|crystal/ && vim.mode != 'Normal' && vim.mode != 'SearchInProgressMode' && vim.mode != 'CommandlineInProgress^' "
       },
       {
         "command": "endwise.checkForAcceptSelectedSuggestion",
         "key": "enter",
-        "when": "editorTextFocus && editorLangId == 'ruby' && suggestWidgetVisible && suggestionMakesTextEdit"
+        "when": "editorTextFocus && editorLangId =~ /ruby|crystal/ && suggestWidgetVisible && suggestionMakesTextEdit"
       }
     ]
   },
