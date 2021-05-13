@@ -21,6 +21,10 @@
   "activationEvents": [
     "onLanguage:ruby"
   ],
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
   "main": "./out/src/extension",
   "contributes": {
     "keybindings": [
