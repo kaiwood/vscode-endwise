@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017 Kai Wood <kwood@kwd.io>
+ Copyright (c) 2021 Kai Wood <kwood@kwd.io>
 
  This software is released under the MIT License.
  https://opensource.org/licenses/MIT
@@ -55,6 +55,12 @@ const OPENINGS = [
   /^\s*?while(\s|\()/,
   /^\s*?for(\s|\()/,
   /\s?do(\s?$|\s\|.*\|\s?$)/,
+  /^\s*?enum\s/,
+  /^\s*?struct\s/,
+  /^\s*?macro\s/,
+  /^\s*?union\s/,
+  /^\s*?lib\s/,
+  /^\s*?annotation\s/,
   /^\s*?def\s/,
   /^\s*?class\s/,
   /^\s*?module\s/,
