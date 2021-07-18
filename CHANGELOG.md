@@ -1,5 +1,10 @@
 # Release notes
 
+## v1.5.0
+
+- Add support for Crystal https://crystal-lang.org (thanks @mathisto)
+- Lower latency on remote workspaces (thanks @matthiaswenz)
+
 ## v1.4.2
 
 - Fix behaviour in Normal mode when using the Vim plugin
