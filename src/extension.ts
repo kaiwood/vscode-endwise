@@ -73,6 +73,7 @@ const SINGLE_LINE_DEFINITION = /;\s*end[\s;]*$/;
 const LINE_PARSE_LIMIT = 100000;
 
 async function endwiseEnter(calledWithModifier = false) {
+  // @ts-ignore
   const editor: vscode.TextEditor = vscode.window.activeTextEditor;
   const lineNumber: number = editor.selection.active.line;
   const columnNumber: number = editor.selection.active.character;
@@ -183,7 +184,7 @@ async function endwiseEnter(calledWithModifier = false) {
   /**
    * Helper to get indentation level of the previous line
    */
-  function indentationFor(lineText) {
+  function indentationFor(lineText: string) {
     const trimmedLine: string = lineText.trim();
     if (trimmedLine.length === 0) return lineText;
 
