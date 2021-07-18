@@ -49,7 +49,21 @@ export function activate(context: vscode.ExtensionContext) {
  * The plugin itself
  */
 
-const OPENINGS = [
+const OPENINGS_RUBY = [
+  /^\s*?if(\s|\()/,
+  /^\s*?unless(\s|\()/,
+  /^\s*?while(\s|\()/,
+  /^\s*?for(\s|\()/,
+  /\s?do(\s?$|\s\|.*\|\s?$)/,
+  /^\s*?def\s/,
+  /^\s*?class\s/,
+  /^\s*?module\s/,
+  /^\s*?case(\s|\()/,
+  /^\s*?begin\s/,
+  /^\s*?until(\s|\()/,
+];
+
+const OPENINGS_CRYSTAL = [
   /^\s*?if(\s|\()/,
   /^\s*?unless(\s|\()/,
   /^\s*?while(\s|\()/,
@@ -66,20 +80,36 @@ const OPENINGS = [
   /^\s*?module\s/,
   /^\s*?case(\s|\()/,
   /^\s*?begin\s/,
-  /^\s*?until(\s|\()/
+  /^\s*?until(\s|\()/,
 ];
 
 const SINGLE_LINE_DEFINITION = /;\s*end[\s;]*$/;
 const LINE_PARSE_LIMIT = 100000;
 
 async function endwiseEnter(calledWithModifier = false) {
+  // @ts-ignore
   const editor: vscode.TextEditor = vscode.window.activeTextEditor;
   const lineNumber: number = editor.selection.active.line;
   const columnNumber: number = editor.selection.active.character;
   const lineText: string = editor.document.lineAt(lineNumber).text;
   const lineLength: number = lineText.length;
 
-  if (shouldAddEnd()) {
+  let openings: RegExp[];
+
+  switch (editor.document.languageId) {
+    case "ruby":
+      openings = OPENINGS_RUBY;
+      break;
+    case "crystal":
+      openings = OPENINGS_CRYSTAL;
+      break;
+
+    default:
+      openings = [];
+      break;
+  }
+
+  if (shouldAddEnd(openings)) {
     await linebreakWithClosing();
   } else {
     await linebreak();
@@ -89,7 +119,7 @@ async function endwiseEnter(calledWithModifier = false) {
    * Insert a line break, add the correct closing and correct cursor position
    */
   async function linebreakWithClosing() {
-    await editor.edit(textEditor => {
+    await editor.edit((textEditor) => {
       textEditor.insert(
         new vscode.Position(lineNumber, lineLength),
         `\n${indentationFor(lineText)}end`
@@ -131,7 +161,7 @@ async function endwiseEnter(calledWithModifier = false) {
   /**
    * Check if a closing "end" should be set. Pretty much the meat of this plugin.
    */
-  function shouldAddEnd() {
+  function shouldAddEnd(openings: RegExp[]) {
     const currentIndentation = indentationFor(lineText);
 
     // Do not close if enter key is pressed in the middle of a line, *except* when a modifier key is used
@@ -139,7 +169,7 @@ async function endwiseEnter(calledWithModifier = false) {
     // Also, do not close on single line definitions
     if (lineText.match(SINGLE_LINE_DEFINITION)) return false;
 
-    for (let condition of OPENINGS) {
+    for (let condition of openings) {
       if (!lineText.match(condition)) continue;
 
       let stackCount = 0;
@@ -160,7 +190,7 @@ async function endwiseEnter(calledWithModifier = false) {
 
         if (currentIndentation === indentationFor(line)) {
           // If another opening is found, increment the stack counter
-          for (let innerCondition of OPENINGS) {
+          for (let innerCondition of openings) {
             if (line.match(innerCondition)) {
               stackCount += 1;
               break;
@@ -183,7 +213,7 @@ async function endwiseEnter(calledWithModifier = false) {
   /**
    * Helper to get indentation level of the previous line
    */
-  function indentationFor(lineText) {
+  function indentationFor(lineText: string) {
     const trimmedLine: string = lineText.trim();
     if (trimmedLine.length === 0) return lineText;
 
