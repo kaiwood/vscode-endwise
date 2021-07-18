@@ -66,7 +66,7 @@ const OPENINGS = [
   /^\s*?module\s/,
   /^\s*?case(\s|\()/,
   /^\s*?begin\s/,
-  /^\s*?until(\s|\()/
+  /^\s*?until(\s|\()/,
 ];
 
 const SINGLE_LINE_DEFINITION = /;\s*end[\s;]*$/;
@@ -89,7 +89,7 @@ async function endwiseEnter(calledWithModifier = false) {
    * Insert a line break, add the correct closing and correct cursor position
    */
   async function linebreakWithClosing() {
-    await editor.edit(textEditor => {
+    await editor.edit((textEditor) => {
       textEditor.insert(
         new vscode.Position(lineNumber, lineLength),
         `\n${indentationFor(lineText)}end`
