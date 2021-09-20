@@ -1,17 +1,7 @@
-# vscode-endwise
+# vscode-endsitter
 
-This is an extension that wisely adds the "end" keyword to code structures in languages like Ruby or Crystal while keeping the correct indentation levels. Inspired by tpope's [endwise.vim](https://github.com/tpope/vim-endwise).
+This is an extension that wisely adds the "end" keyword to code structures in Ruby while keeping the correct indentation levels.
 
-![Endwise](./images/endwise.gif)
+This version was based on [endwise](https://github.com/kaiwood/vscode-endwise) but uses tree-sitter to decide if end should be added to the code.
 
 Just hit `enter` to get your block automagically closed. `ctrl+enter` / `cmd+enter` closed from the middle of the line as well.
-
-## TODO
-
-- [X] Wisely detect already closed blocks to skip additional "end"'s
-- [ ] Add support for more languages:
-  - [x]  Crystal
-  - [ ]  Lua
-  - [ ]  Bash
-  - [ ]  Elixir
-- [ ] Add a gif with code that actually makes sense 🙄
