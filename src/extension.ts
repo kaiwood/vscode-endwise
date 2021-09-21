@@ -116,7 +116,20 @@ async function endwiseEnter(
 
     const newText =
       text.slice(0, node.endIndex) + "\nend\n" + text.slice(node.endIndex + 1);
-    const t2 = parser.parse(newText);
+
+    t.edit({
+      startIndex: node.startIndex,
+      oldEndIndex: node.endIndex,
+      newEndIndex: node.endIndex + 5,
+      startPosition: node.startPosition,
+      oldEndPosition: node.endPosition,
+      newEndPosition: {
+        row: node.endPosition.row + 1,
+        column: 3,
+      },
+    });
+
+    const t2 = parser.parse(newText, t);
 
     if (!t2.rootNode.hasError()) {
       return linebreakWithClosing(editor);
