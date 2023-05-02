@@ -84,6 +84,7 @@ const OPENINGS_CRYSTAL = [
 ];
 
 const SINGLE_LINE_DEFINITION = /;\s*end[\s;]*$/;
+const ENDLESS_DEFINITION = /^\s*?def\s+[^\s(]+\s*(?:\(.*\))?\s+=/;
 const LINE_PARSE_LIMIT = 100000;
 
 async function endwiseEnter(calledWithModifier = false) {
@@ -168,6 +169,8 @@ async function endwiseEnter(calledWithModifier = false) {
     if (!calledWithModifier && lineText.length > columnNumber) return false;
     // Also, do not close on single line definitions
     if (lineText.match(SINGLE_LINE_DEFINITION)) return false;
+    // Also, do not close on endless definitions
+    if (lineText.match(ENDLESS_DEFINITION)) return false;
 
     for (let condition of openings) {
       if (!lineText.match(condition)) continue;
