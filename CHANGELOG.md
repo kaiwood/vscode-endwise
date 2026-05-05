@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Use VS Code's on-type formatting flow for normal `enter` handling.
+- Ignore comments when deciding whether to add an `end`.
 
 ## v1.5.0
 

@@ -96,6 +96,27 @@ suite("Endwise block detection", () => {
     assert.strictEqual(closes("ruby", "def foo(bar) = bar"), false);
   });
 
+  test("ignores Ruby line comments", () => {
+    assert.strictEqual(closes("ruby", "# if condition"), false);
+    assert.strictEqual(closes("ruby", "items.each # do"), false);
+    assert.strictEqual(closes("ruby", "if condition # comment"), true);
+  });
+
+  test("ignores Ruby block comments", () => {
+    assert.strictEqual(
+      closes("ruby", "=begin\nif condition\ndo\nend\n=end"),
+      false
+    );
+    assert.strictEqual(
+      closes("ruby", "if condition\n=begin\nend\n=end"),
+      true
+    );
+  });
+
+  test("ignores Crystal line comments", () => {
+    assert.strictEqual(closes("crystal", "# enum Color"), false);
+  });
+
   test("skips middle-of-line enter unless modifier is used", () => {
     const document = new TestDocument("if condition");
 

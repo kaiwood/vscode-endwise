@@ -132,6 +132,12 @@ suite("Endwise on-type formatter", () => {
     assert.strictEqual(edits, undefined);
   });
 
+  test("skips commented opening lines", async () => {
+    const edits = await provideEdits("# if condition$");
+
+    assert.strictEqual(edits, undefined);
+  });
+
   test("skips middle-of-line newlines", async () => {
     const edits = await provideEdits("if con$dition");
 
