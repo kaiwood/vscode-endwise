@@ -114,6 +114,8 @@ async function endwiseEnter(calledWithModifier = false) {
   } else {
     await linebreak();
   }
+  // Trigger inline suggestion after any modifications (e.g. GitHub Copilot)
+  vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
 
   /**
    * Insert a line break, add the correct closing and correct cursor position
@@ -127,7 +129,7 @@ async function endwiseEnter(calledWithModifier = false) {
     });
 
     await vscode.commands.executeCommand("cursorUp");
-    vscode.commands.executeCommand("editor.action.insertLineAfter");
+    await vscode.commands.executeCommand("editor.action.insertLineAfter");
   }
 
   /**
