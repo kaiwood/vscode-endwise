@@ -35,6 +35,11 @@ async function openDocument(
   return editor;
 }
 
+function cursor(line: number, character: number): vscode.Selection {
+  const position = new vscode.Position(line, character);
+  return new vscode.Selection(position, position);
+}
+
 async function closeActiveEditor() {
   await new Promise((resolve) => setTimeout(resolve, 100));
   await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
@@ -153,6 +158,58 @@ suite("Extension commands", () => {
     assert.deepStrictEqual(editor.selection.active, new vscode.Position(1, 4));
   });
 
+  test("adds end for every cursor with the modifier command", async () => {
+    const editor = await openDocument(
+      "if first\nputs value\n  if second",
+      "ruby",
+      0
+    );
+    editor.options = { ...editor.options, insertSpaces: true, tabSize: 4 };
+    editor.selections = [cursor(0, 2), cursor(2, 4)];
+
+    await vscode.commands.executeCommand("endwise.cmdEnter");
+
+    assert.strictEqual(
+      editor.document.getText(),
+      "if first\n    \nend\nputs value\n  if second\n      \n  end"
+    );
+    assert.deepStrictEqual(
+      editor.selections.map((selection) => selection.active),
+      [new vscode.Position(1, 4), new vscode.Position(5, 6)]
+    );
+  });
+
+  test("adds end once for duplicate cursors on the same line", async () => {
+    const editor = await openDocument("if condition", "ruby", 0);
+    editor.options = { ...editor.options, insertSpaces: true, tabSize: 4 };
+    editor.selections = [cursor(0, 2), cursor(0, 6)];
+
+    await vscode.commands.executeCommand("endwise.cmdEnter");
+
+    assert.strictEqual(editor.document.getText(), "if condition\n    \nend");
+    assert.deepStrictEqual(
+      editor.selections.map((selection) => selection.active),
+      [new vscode.Position(1, 4)]
+    );
+  });
+
+  test("mixes end insertion and plain line breaks with multiple cursors", async () => {
+    const editor = await openDocument("if condition\nvalue", "ruby", 0);
+    editor.options = { ...editor.options, insertSpaces: true, tabSize: 4 };
+    editor.selections = [cursor(0, 2), cursor(1, 2)];
+
+    await vscode.commands.executeCommand("endwise.cmdEnter");
+
+    assert.strictEqual(
+      editor.document.getText(),
+      "if condition\n    \nend\nvalue\n"
+    );
+    assert.deepStrictEqual(
+      editor.selections.map((selection) => selection.active),
+      [new vscode.Position(1, 4), new vscode.Position(4, 0)]
+    );
+  });
+
   test("modifier command inserts a plain line break when Ruby is disabled", async () => {
     await withEndwiseLanguageEnabled("ruby", false, async () => {
       const editor = await openDocument("if condition", "ruby", 0, 2);
@@ -181,6 +238,25 @@ suite("Extension commands", () => {
       assert.deepStrictEqual(
         editor.selection.active,
         new vscode.Position(2, 4)
+      );
+    });
+  });
+
+  test("adds end for every cursor while typing", async () => {
+    await withFormatOnTypeEnabled(async () => {
+      const editor = await openDocument("if first\nif second", "ruby", 0);
+      editor.options = { ...editor.options, insertSpaces: true, tabSize: 4 };
+      editor.selections = [cursor(0, 8), cursor(1, 9)];
+
+      await typeText("\n");
+
+      assert.strictEqual(
+        editor.document.getText(),
+        "if first\n    \nend\nif second\n    \nend"
+      );
+      assert.deepStrictEqual(
+        editor.selections.map((selection) => selection.active),
+        [new vscode.Position(1, 4), new vscode.Position(4, 4)]
       );
     });
   });
