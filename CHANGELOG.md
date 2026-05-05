@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Support for multiple cursors
+- Settings panel to turn off auto-insertion per language
 - Use VS Code's on-type formatting flow for normal `enter` handling.
 - Ignore comments when deciding whether to add an `end`.
 
