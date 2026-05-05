@@ -1,5 +1,8 @@
 .vscode/**
 .vscode-test/**
+.vscode-test.js
+eslint.config.mjs
+tsconfig.json
 out/test/**
 
 src/**
