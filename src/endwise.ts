@@ -72,12 +72,6 @@ export function indentationFor(lineText: string): string {
   return indentation;
 }
 
-export function shouldAcceptSelectedSuggestion(
-  suggestionOnEnter: unknown
-): boolean {
-  return suggestionOnEnter !== "off";
-}
-
 export function shouldAddEnd(options: ShouldAddEndOptions): boolean {
   const calledWithModifier = options.calledWithModifier ?? false;
   const openings = openingsForLanguage(options.languageId);

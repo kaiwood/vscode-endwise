@@ -1,5 +1,9 @@
 # Release notes
 
+## Unreleased
+
+- Use VS Code's on-type formatting flow for normal `enter` handling.
+
 ## v1.5.0
 
 - Add support for Crystal https://crystal-lang.org (thanks @mathisto)

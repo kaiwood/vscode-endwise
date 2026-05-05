@@ -4,7 +4,15 @@ This is an extension that wisely adds the "end" keyword to code structures in la
 
 ![Endwise](./images/endwise.gif)
 
-Just hit `enter` to get your block automagically closed. `ctrl+enter` / `cmd+enter` closed from the middle of the line as well.
+Enable VS Code's on-type formatting, then hit `enter` to get your block automagically closed:
+
+```json
+"editor.formatOnType": true
+```
+
+You can also enable it per language if you prefer language-specific editor settings.
+
+`ctrl+enter` / `cmd+enter` closes from the middle of the line as well.
 
 ## TODO
 

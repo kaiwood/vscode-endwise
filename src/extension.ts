@@ -7,74 +7,147 @@
 
 "use strict";
 import * as vscode from "vscode";
-import {
-  indentationFor,
-  shouldAcceptSelectedSuggestion,
-  shouldAddEnd,
-} from "./endwise";
+import { indentationFor, shouldAddEnd } from "./endwise";
+import { documentAdapter, SUPPORTED_LANGUAGES } from "./formatter";
+
+let applyingEndwiseEdit = false;
 
 /**
  * Activate plugin commands
  */
 export function activate(context: vscode.ExtensionContext) {
-  const enter = vscode.commands.registerCommand("endwise.enter", async () => {
-    await endwiseEnter();
-  });
-
   const cmdEnter = vscode.commands.registerCommand(
     "endwise.cmdEnter",
     async () => {
-      await vscode.commands.executeCommand("cursorEnd");
-      await endwiseEnter(true);
+      await endwiseModifierEnter();
     }
   );
 
-  // We have to check "acceptSuggestionOnEnter" is set to a value !== "off" if the suggest widget is currently visible,
-  // otherwise the suggestion won't be triggered because of the overloaded enter key.
-  const checkForAcceptSelectedSuggestion = vscode.commands.registerCommand(
-    "endwise.checkForAcceptSelectedSuggestion",
-    async () => {
-      const config = vscode.workspace.getConfiguration();
-      const suggestionOnEnter = config.get("editor.acceptSuggestionOnEnter");
-
-      if (shouldAcceptSelectedSuggestion(suggestionOnEnter)) {
-        await vscode.commands.executeCommand("acceptSelectedSuggestion");
-      } else {
-        await vscode.commands.executeCommand("endwise.enter");
-      }
-    }
+  const documentChange = vscode.workspace.onDidChangeTextDocument((event) =>
+    handleDocumentChange(event)
   );
 
-  context.subscriptions.push(enter);
   context.subscriptions.push(cmdEnter);
-  context.subscriptions.push(checkForAcceptSelectedSuggestion);
+  context.subscriptions.push(documentChange);
+}
+
+async function handleDocumentChange(event: vscode.TextDocumentChangeEvent) {
+  if (applyingEndwiseEdit) {
+    return;
+  }
+
+  const editor = vscode.window.activeTextEditor;
+  if (!editor || editor.document.uri.toString() !== event.document.uri.toString()) {
+    return;
+  }
+
+  if (!isSupportedLanguage(event.document.languageId)) {
+    return;
+  }
+
+  if (
+    !vscode.workspace
+      .getConfiguration("editor", event.document.uri)
+      .get<boolean>("formatOnType")
+  ) {
+    return;
+  }
+
+  const change = event.contentChanges.find((contentChange) =>
+    contentChange.text.includes("\n")
+  );
+  if (!change) {
+    return;
+  }
+
+  const lineNumber = change.range.start.line;
+  const currentLineNumber = lineNumber + change.text.split("\n").length - 1;
+  const lineText = event.document.lineAt(lineNumber).text;
+
+  if (
+    !shouldAddEnd({
+      columnNumber: change.range.start.character,
+      document: documentAdapter(event.document),
+      languageId: event.document.languageId,
+      lineNumber,
+    })
+  ) {
+    return;
+  }
+
+  await insertClosingEnd(editor, lineNumber, currentLineNumber, lineText);
+}
+
+async function insertClosingEnd(
+  editor: vscode.TextEditor,
+  lineNumber: number,
+  currentLineNumber: number,
+  lineText: string
+) {
+  const closingIndentation = indentationFor(lineText);
+  const innerIndentation = closingIndentation + indentationUnit(editor);
+  const currentLine = editor.document.lineAt(currentLineNumber);
+
+  applyingEndwiseEdit = true;
+  try {
+    await editor.edit((textEditor) => {
+      textEditor.replace(
+        new vscode.Range(
+          currentLineNumber,
+          0,
+          currentLineNumber,
+          currentLine.text.length
+        ),
+        `${innerIndentation}\n${closingIndentation}end`
+      );
+    });
+  } finally {
+    applyingEndwiseEdit = false;
+  }
+
+  const position = new vscode.Position(currentLineNumber, innerIndentation.length);
+  editor.selection = new vscode.Selection(position, position);
+
+  // Trigger inline suggestion after any modifications (e.g. GitHub Copilot)
+  vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
+}
+
+function isSupportedLanguage(languageId: string): boolean {
+  return SUPPORTED_LANGUAGES.includes(
+    languageId as (typeof SUPPORTED_LANGUAGES)[number]
+  );
 }
 
 /**
  * The plugin itself
  */
 
-async function endwiseEnter(calledWithModifier = false) {
-  const editor = vscode.window.activeTextEditor as vscode.TextEditor;
+async function endwiseModifierEnter() {
+  const activeEditor = vscode.window.activeTextEditor;
+  if (!activeEditor) {
+    return;
+  }
+  const editor: vscode.TextEditor = activeEditor;
+
   const lineNumber: number = editor.selection.active.line;
-  const columnNumber: number = editor.selection.active.character;
   const lineText: string = editor.document.lineAt(lineNumber).text;
   const lineLength: number = lineText.length;
 
   if (
     shouldAddEnd({
-      calledWithModifier,
-      columnNumber,
-      document: {
-        lineCount: editor.document.lineCount,
-        lineAt: (line) => editor.document.lineAt(line).text,
-      },
+      calledWithModifier: true,
+      columnNumber: editor.selection.active.character,
+      document: documentAdapter(editor.document),
       languageId: editor.document.languageId,
       lineNumber,
     })
   ) {
     await linebreakWithClosing();
   } else {
+    editor.selection = new vscode.Selection(
+      new vscode.Position(lineNumber, lineLength),
+      new vscode.Position(lineNumber, lineLength)
+    );
     await linebreak();
   }
   // Trigger inline suggestion after any modifications (e.g. GitHub Copilot)
@@ -84,15 +157,15 @@ async function endwiseEnter(calledWithModifier = false) {
    * Insert a line break, add the correct closing and correct cursor position
    */
   async function linebreakWithClosing() {
-    await editor.edit((textEditor) => {
-      textEditor.insert(
-        new vscode.Position(lineNumber, lineLength),
-        `\n${indentationFor(lineText)}end`
-      );
-    });
-
-    await vscode.commands.executeCommand("cursorUp");
-    await vscode.commands.executeCommand("editor.action.insertLineAfter");
+    applyingEndwiseEdit = true;
+    try {
+      await editor.edit((textEditor) => {
+        textEditor.insert(new vscode.Position(lineNumber, lineLength), "\n");
+      });
+    } finally {
+      applyingEndwiseEdit = false;
+    }
+    await insertClosingEnd(editor, lineNumber, lineNumber + 1, lineText);
   }
 
   /**
@@ -123,4 +196,13 @@ async function endwiseEnter(calledWithModifier = false) {
     }
   }
 
+}
+
+function indentationUnit(editor: vscode.TextEditor): string {
+  if (editor.options.insertSpaces === false) {
+    return "\t";
+  }
+
+  const tabSize = typeof editor.options.tabSize === "number" ? editor.options.tabSize : 4;
+  return " ".repeat(tabSize);
 }

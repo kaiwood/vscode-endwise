@@ -1,10 +1,5 @@
 import * as assert from "assert";
-import {
-  EndwiseDocument,
-  indentationFor,
-  shouldAcceptSelectedSuggestion,
-  shouldAddEnd,
-} from "../../endwise";
+import { EndwiseDocument, indentationFor, shouldAddEnd } from "../../endwise";
 
 class TestDocument implements EndwiseDocument {
   private readonly lines: string[];
@@ -136,10 +131,4 @@ suite("Endwise block detection", () => {
     assert.strictEqual(indentationFor(""), "");
   });
 
-  test("routes suggestion acceptance based on editor setting", () => {
-    assert.strictEqual(shouldAcceptSelectedSuggestion("on"), true);
-    assert.strictEqual(shouldAcceptSelectedSuggestion("smart"), true);
-    assert.strictEqual(shouldAcceptSelectedSuggestion(undefined), true);
-    assert.strictEqual(shouldAcceptSelectedSuggestion("off"), false);
-  });
 });
