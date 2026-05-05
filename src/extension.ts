@@ -39,7 +39,8 @@ async function handleDocumentChange(event: vscode.TextDocumentChangeEvent) {
   }
 
   const editor = vscode.window.activeTextEditor;
-  if (!editor || editor.document.uri.toString() !== event.document.uri.toString()) {
+  const documentUri = event.document.uri.toString();
+  if (!editor || editor.document.uri.toString() !== documentUri) {
     return;
   }
 
@@ -68,6 +69,11 @@ async function handleDocumentChange(event: vscode.TextDocumentChangeEvent) {
 
   const lineNumber = change.range.start.line;
   const currentLineNumber = lineNumber + change.text.split("\n").length - 1;
+  await waitForSelectionUpdate();
+  if (editor.selection.active.line !== currentLineNumber) {
+    return;
+  }
+
   const lineText = event.document.lineAt(lineNumber).text;
 
   if (
@@ -82,6 +88,10 @@ async function handleDocumentChange(event: vscode.TextDocumentChangeEvent) {
   }
 
   await insertClosingEnd(editor, lineNumber, currentLineNumber, lineText);
+}
+
+function waitForSelectionUpdate(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 25));
 }
 
 async function insertClosingEnd(

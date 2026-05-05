@@ -1,4 +1,7 @@
 import * as assert from "assert";
+import * as fs from "fs/promises";
+import * as os from "os";
+import * as path from "path";
 import * as vscode from "vscode";
 
 async function activateExtension() {
@@ -51,6 +54,26 @@ async function withFormatOnTypeEnabled(run: () => Promise<void>) {
   } finally {
     await config.update(
       "formatOnType",
+      previous,
+      vscode.ConfigurationTarget.Global
+    );
+  }
+}
+
+async function withInsertFinalNewlineEnabled(run: () => Promise<void>) {
+  const config = vscode.workspace.getConfiguration("files");
+  const previous = config.inspect("insertFinalNewline")?.globalValue;
+
+  try {
+    await config.update(
+      "insertFinalNewline",
+      true,
+      vscode.ConfigurationTarget.Global
+    );
+    await run();
+  } finally {
+    await config.update(
+      "insertFinalNewline",
       previous,
       vscode.ConfigurationTarget.Global
     );
@@ -171,6 +194,45 @@ suite("Extension commands", () => {
         await typeText("\n");
 
         assert.ok(!editor.document.getText().includes("end"));
+      });
+    });
+  });
+
+  test("does not add end when save inserts the final newline", async () => {
+    await withFormatOnTypeEnabled(async () => {
+      await withInsertFinalNewlineEnabled(async () => {
+        const directory = await fs.mkdtemp(
+          path.join(os.tmpdir(), "vscode-endwise-")
+        );
+        const filePath = path.join(directory, "final-newline.rb");
+
+        try {
+          await fs.writeFile(filePath, "if condition ", "utf8");
+
+          let document = await vscode.workspace.openTextDocument(filePath);
+          if (document.languageId !== "ruby") {
+            document = await vscode.languages.setTextDocumentLanguage(
+              document,
+              "ruby"
+            );
+          }
+          const editor = await vscode.window.showTextDocument(document);
+          const lineLength = editor.document.lineAt(0).text.length;
+          await editor.edit((textEditor) => {
+            textEditor.delete(new vscode.Range(0, lineLength - 1, 0, lineLength));
+          });
+
+          assert.strictEqual(editor.document.getText(), "if condition");
+          assert.strictEqual(editor.document.isDirty, true);
+
+          assert.strictEqual(await editor.document.save(), true);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          assert.strictEqual(editor.document.getText(), "if condition\n");
+        } finally {
+          await closeActiveEditor();
+          await fs.rm(directory, { force: true, recursive: true });
+        }
       });
     });
   });
