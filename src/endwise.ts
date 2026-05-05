@@ -1,50 +1,9 @@
-export const OPENINGS_RUBY = [
-  /^\s*?if(\s|\()/,
-  /^\s*?unless(\s|\()/,
-  /^\s*?while(\s|\()/,
-  /^\s*?for(\s|\()/,
-  /\s?do(\s?$|\s\|.*\|\s?$)/,
-  /^\s*?def\s/,
-  /^\s*?class\s/,
-  /^\s*?module\s/,
-  /^\s*?case(\s|\()/,
-  /^\s*?begin\s/,
-  /^\s*?until(\s|\()/,
-];
-
-export const OPENINGS_CRYSTAL = [
-  /^\s*?if(\s|\()/,
-  /^\s*?unless(\s|\()/,
-  /^\s*?while(\s|\()/,
-  /^\s*?for(\s|\()/,
-  /\s?do(\s?$|\s\|.*\|\s?$)/,
-  /^\s*?enum\s/,
-  /^\s*?struct\s/,
-  /^\s*?macro\s/,
-  /^\s*?union\s/,
-  /^\s*?lib\s/,
-  /^\s*?annotation\s/,
-  /^\s*?def\s/,
-  /^\s*?class\s/,
-  /^\s*?module\s/,
-  /^\s*?case(\s|\()/,
-  /^\s*?begin\s/,
-  /^\s*?until(\s|\()/,
-];
+import { languageDefinitionFor } from "./languages";
+import { BlockCommentSyntax, CommentSyntax } from "./languages/types";
 
 const SINGLE_LINE_DEFINITION = /;\s*end[\s;]*$/;
 const ENDLESS_DEFINITION = /^\s*?def\s+[^\s(]+\s*(?:\(.*\))?\s+=/;
 const LINE_PARSE_LIMIT = 100000;
-
-interface BlockCommentSyntax {
-  start: RegExp;
-  end: RegExp;
-}
-
-interface CommentSyntax {
-  line: string[];
-  block: BlockCommentSyntax[];
-}
 
 export interface EndwiseDocument {
   lineCount: number;
@@ -60,28 +19,11 @@ export interface ShouldAddEndOptions {
 }
 
 export function openingsForLanguage(languageId: string): RegExp[] {
-  switch (languageId) {
-    case "ruby":
-      return OPENINGS_RUBY;
-    case "crystal":
-      return OPENINGS_CRYSTAL;
-    default:
-      return [];
-  }
+  return languageDefinitionFor(languageId)?.openings ?? [];
 }
 
 function commentSyntaxForLanguage(languageId: string): CommentSyntax {
-  switch (languageId) {
-    case "ruby":
-      return {
-        line: ["#"],
-        block: [{ start: /^\s*=begin\b/, end: /^\s*=end\b/ }],
-      };
-    case "crystal":
-      return { line: ["#"], block: [] };
-    default:
-      return { line: [], block: [] };
-  }
+  return languageDefinitionFor(languageId)?.comments ?? { line: [], block: [] };
 }
 
 export function indentationFor(lineText: string): string {

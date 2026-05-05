@@ -57,6 +57,23 @@ async function withFormatOnTypeEnabled(run: () => Promise<void>) {
   }
 }
 
+async function withEndwiseLanguageEnabled(
+  language: "ruby" | "crystal",
+  value: boolean,
+  run: () => Promise<void>
+) {
+  const config = vscode.workspace.getConfiguration("endwise");
+  const setting = `languages.${language}.enabled`;
+  const previous = config.inspect<boolean>(setting)?.globalValue;
+
+  try {
+    await config.update(setting, value, vscode.ConfigurationTarget.Global);
+    await run();
+  } finally {
+    await config.update(setting, previous, vscode.ConfigurationTarget.Global);
+  }
+}
+
 async function typeText(text: string) {
   await vscode.commands.executeCommand("type", { text });
   await new Promise((resolve) => setTimeout(resolve, 100));
@@ -113,6 +130,17 @@ suite("Extension commands", () => {
     assert.deepStrictEqual(editor.selection.active, new vscode.Position(1, 4));
   });
 
+  test("modifier command inserts a plain line break when Ruby is disabled", async () => {
+    await withEndwiseLanguageEnabled("ruby", false, async () => {
+      const editor = await openDocument("if condition", "ruby", 0, 2);
+
+      await vscode.commands.executeCommand("endwise.cmdEnter");
+
+      assert.ok(!editor.document.getText().includes("end"));
+      assert.strictEqual(editor.selection.active.line, 1);
+    });
+  });
+
   test("keeps the caret in the HelloWorld method body when typing", async () => {
     await withFormatOnTypeEnabled(async () => {
       const editor = await openDocument("", "ruby", 0);
@@ -131,6 +159,19 @@ suite("Extension commands", () => {
         editor.selection.active,
         new vscode.Position(2, 4)
       );
+    });
+  });
+
+  test("does not add end while typing when Ruby is disabled", async () => {
+    await withFormatOnTypeEnabled(async () => {
+      await withEndwiseLanguageEnabled("ruby", false, async () => {
+        const editor = await openDocument("", "ruby", 0);
+
+        await typeText("if condition");
+        await typeText("\n");
+
+        assert.ok(!editor.document.getText().includes("end"));
+      });
     });
   });
 });

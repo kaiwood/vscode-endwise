@@ -1,5 +1,6 @@
 import * as assert from "assert";
 import { EndwiseDocument, indentationFor, shouldAddEnd } from "../../endwise";
+import { isSupportedLanguage } from "../../languages";
 
 class TestDocument implements EndwiseDocument {
   private readonly lines: string[];
@@ -32,6 +33,8 @@ function closes(languageId: string, text: string, calledWithModifier = false) {
 
 suite("Endwise block detection", () => {
   test("detects Ruby openings", () => {
+    assert.strictEqual(isSupportedLanguage("ruby"), true);
+
     const openings = [
       "if condition",
       "unless condition",
@@ -53,6 +56,8 @@ suite("Endwise block detection", () => {
   });
 
   test("detects Crystal openings", () => {
+    assert.strictEqual(isSupportedLanguage("crystal"), true);
+
     const openings = [
       "if condition",
       "unless condition",

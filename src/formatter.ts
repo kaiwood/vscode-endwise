@@ -1,8 +1,6 @@
 import * as vscode from "vscode";
 import { indentationFor, shouldAddEnd } from "./endwise";
 
-export const SUPPORTED_LANGUAGES = ["ruby", "crystal"] as const;
-
 export class EndwiseOnTypeFormattingEditProvider
   implements vscode.OnTypeFormattingEditProvider
 {

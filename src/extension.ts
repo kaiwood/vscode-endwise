@@ -8,7 +8,9 @@
 "use strict";
 import * as vscode from "vscode";
 import { indentationFor, shouldAddEnd } from "./endwise";
-import { documentAdapter, SUPPORTED_LANGUAGES } from "./formatter";
+import { documentAdapter } from "./formatter";
+import { isSupportedLanguage } from "./languages";
+import { isLanguageEnabled } from "./settings";
 
 let applyingEndwiseEdit = false;
 
@@ -42,6 +44,10 @@ async function handleDocumentChange(event: vscode.TextDocumentChangeEvent) {
   }
 
   if (!isSupportedLanguage(event.document.languageId)) {
+    return;
+  }
+
+  if (!isLanguageEnabled(event.document.languageId, event.document.uri)) {
     return;
   }
 
@@ -112,12 +118,6 @@ async function insertClosingEnd(
   vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
 }
 
-function isSupportedLanguage(languageId: string): boolean {
-  return SUPPORTED_LANGUAGES.includes(
-    languageId as (typeof SUPPORTED_LANGUAGES)[number]
-  );
-}
-
 /**
  * The plugin itself
  */
@@ -132,6 +132,16 @@ async function endwiseModifierEnter() {
   const lineNumber: number = editor.selection.active.line;
   const lineText: string = editor.document.lineAt(lineNumber).text;
   const lineLength: number = lineText.length;
+
+  if (!isLanguageEnabled(editor.document.languageId, editor.document.uri)) {
+    editor.selection = new vscode.Selection(
+      new vscode.Position(lineNumber, lineLength),
+      new vscode.Position(lineNumber, lineLength)
+    );
+    await linebreak();
+    vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
+    return;
+  }
 
   if (
     shouldAddEnd({

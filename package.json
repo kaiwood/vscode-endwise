@@ -28,6 +28,21 @@
   ],
   "main": "./out/extension",
   "contributes": {
+    "configuration": {
+      "title": "Endwise",
+      "properties": {
+        "endwise.languages.ruby.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Endwise behavior for Ruby."
+        },
+        "endwise.languages.crystal.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Endwise behavior for Crystal."
+        }
+      }
+    },
     "keybindings": [
       {
         "command": "endwise.cmdEnter",
