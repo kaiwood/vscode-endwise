@@ -118,6 +118,33 @@ suite("Endwise block detection", () => {
     }
   });
 
+  test("detects Julia openings", () => {
+    assert.strictEqual(isSupportedLanguage("julia"), true);
+
+    const openings = [
+      "begin",
+      "if condition",
+      "while condition",
+      "for item in items",
+      "try",
+      "let value = 1",
+      "quote",
+      "function foo()",
+      "macro debug()",
+      "module Foo",
+      "baremodule Foo",
+      "struct Point",
+      "mutable struct Point",
+      "abstract type Shape",
+      "primitive type Word 32",
+      "map(items) do item",
+    ];
+
+    for (const opening of openings) {
+      assert.strictEqual(closes("julia", opening), true, opening);
+    }
+  });
+
   test("detects Lua openings", () => {
     assert.strictEqual(isSupportedLanguage("lua"), true);
 
@@ -175,6 +202,7 @@ suite("Endwise block detection", () => {
       true
     );
     assert.strictEqual(closes("elixir", "if condition do\nend"), false);
+    assert.strictEqual(closes("julia", "if condition\nend"), false);
   });
 
   test("skips unsupported languages", () => {
@@ -214,6 +242,12 @@ suite("Endwise block detection", () => {
     assert.strictEqual(closes("elixir", "if condition do # comment"), true);
   });
 
+  test("ignores Julia line comments", () => {
+    assert.strictEqual(closes("julia", "# if condition"), false);
+    assert.strictEqual(closes("julia", "value # do"), false);
+    assert.strictEqual(closes("julia", "if condition # comment"), true);
+  });
+
   test("ignores Lua comments", () => {
     assert.strictEqual(closes("lua", "-- if condition then"), false);
     assert.strictEqual(closes("lua", "if condition then -- comment"), true);
@@ -244,6 +278,13 @@ suite("Endwise block detection", () => {
     assert.strictEqual(closes("elixir", "def foo, do: :ok"), false);
     assert.strictEqual(closes("elixir", "if true, do: :ok"), false);
     assert.strictEqual(closes("elixir", "fn x -> x end"), false);
+  });
+
+  test("does not add end for inline Julia forms", () => {
+    assert.strictEqual(closes("julia", "begin x = 1; x end"), false);
+    assert.strictEqual(closes("julia", "A[begin]"), false);
+    assert.strictEqual(closes("julia", "A[end]"), false);
+    assert.strictEqual(closes("julia", "f(x) = x"), false);
   });
 
   test("skips middle-of-line enter unless modifier is used", () => {

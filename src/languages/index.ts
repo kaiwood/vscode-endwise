@@ -1,5 +1,6 @@
 import { crystal } from "./crystal";
 import { elixir } from "./elixir";
+import { julia } from "./julia";
 import { lua } from "./lua";
 import { ruby } from "./ruby";
 import { shellscript } from "./shellscript";
@@ -9,6 +10,7 @@ export const SUPPORTED_LANGUAGES = [
   "ruby",
   "crystal",
   "elixir",
+  "julia",
   "lua",
   "shellscript",
 ] as const;
@@ -19,6 +21,7 @@ const LANGUAGE_DEFINITIONS: Record<SupportedLanguage, LanguageDefinition> = {
   ruby,
   crystal,
   elixir,
+  julia,
   lua,
   shellscript,
 };

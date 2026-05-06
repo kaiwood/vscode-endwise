@@ -8,6 +8,7 @@
 - Ignore comments when deciding whether to add an `end`.
 - Add Bash support through VS Code's `shellscript` language mode.
 - Add Elixir support.
+- Add Julia support.
 
 ## v1.5.0
 
