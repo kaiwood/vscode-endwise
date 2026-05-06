@@ -72,6 +72,13 @@ suite("Endwise edit planner", () => {
     );
   });
 
+  test("builds an enter command plan for a Julia block", () => {
+    const result = plan("function foo()", { languageId: "julia" });
+
+    assert.strictEqual(result?.addedEnd, true);
+    assert.strictEqual(result?.text, "\n  \nend");
+  });
+
   test("builds shellscript plans with matching close words", () => {
     assert.strictEqual(
       plan("if [ -f file ]; then", { languageId: "shellscript" })?.text,

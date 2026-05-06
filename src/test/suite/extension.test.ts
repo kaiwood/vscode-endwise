@@ -112,7 +112,7 @@ async function withInsertFinalNewlineEnabled(run: () => Promise<void>) {
 }
 
 async function withEndwiseLanguageEnabled(
-  language: "ruby" | "crystal" | "elixir" | "lua" | "shellscript",
+  language: "ruby" | "crystal" | "elixir" | "julia" | "lua" | "shellscript",
   value: boolean,
   run: () => Promise<void>,
 ) {
@@ -192,7 +192,14 @@ suite("Extension commands", () => {
         (keybinding) => keybinding.when ?? "",
       ) ?? [];
 
-    for (const language of ["ruby", "crystal", "elixir", "lua", "shellscript"]) {
+    for (const language of [
+      "ruby",
+      "crystal",
+      "elixir",
+      "julia",
+      "lua",
+      "shellscript",
+    ]) {
       assert.ok(
         conditions.every((condition) => condition.includes(language)),
         language,

@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 import { isLanguageEnabled } from "../../settings";
 
 async function withLanguageEnabledSetting(
-  languageId: "ruby" | "crystal" | "elixir" | "lua" | "shellscript",
+  languageId: "ruby" | "crystal" | "elixir" | "julia" | "lua" | "shellscript",
   value: boolean | undefined,
   run: () => Promise<void>
 ) {
@@ -38,6 +38,12 @@ suite("Endwise settings", () => {
     });
   });
 
+  test("enables Julia by default", async () => {
+    await withLanguageEnabledSetting("julia", undefined, async () => {
+      assert.strictEqual(isLanguageEnabled("julia"), true);
+    });
+  });
+
   test("enables Lua by default", async () => {
     await withLanguageEnabledSetting("lua", undefined, async () => {
       assert.strictEqual(isLanguageEnabled("lua"), true);
@@ -65,6 +71,12 @@ suite("Endwise settings", () => {
   test("disables Elixir when configured off", async () => {
     await withLanguageEnabledSetting("elixir", false, async () => {
       assert.strictEqual(isLanguageEnabled("elixir"), false);
+    });
+  });
+
+  test("disables Julia when configured off", async () => {
+    await withLanguageEnabledSetting("julia", false, async () => {
+      assert.strictEqual(isLanguageEnabled("julia"), false);
     });
   });
 
