@@ -45,10 +45,15 @@
     },
     "keybindings": [
       {
+        "command": "endwise.enter",
+        "key": "enter",
+        "when": "editorTextFocus && editorLangId =~ /^ruby$|^crystal$/ && !suggestWidgetVisible && !renameInputVisible && !inSnippetMode && !editorReadonly"
+      },
+      {
         "command": "endwise.cmdEnter",
         "key": "ctrl+enter",
         "mac": "cmd+enter",
-        "when": "editorTextFocus && editorLangId =~ /^ruby$|^crystal$/ && vim.mode != 'Normal' && vim.mode != 'SearchInProgressMode' && vim.mode != 'CommandlineInProgress^' "
+        "when": "editorTextFocus && editorLangId =~ /^ruby$|^crystal$/"
       }
     ]
   },

@@ -18,6 +18,12 @@ export interface ShouldAddEndOptions {
   lineNumber: number;
 }
 
+export interface EndwiseLineOptions {
+  document: EndwiseDocument;
+  languageId: string;
+  lineNumber: number;
+}
+
 export function openingsForLanguage(languageId: string): RegExp[] {
   return languageDefinitionFor(languageId)?.openings ?? [];
 }
@@ -36,6 +42,26 @@ export function indentationFor(lineText: string): string {
   const indentation: string = lineText.substr(0, whitespaceEndsAt);
 
   return indentation;
+}
+
+export function lineOpensBlock(options: EndwiseLineOptions): boolean {
+  const codeLine = codeLineAt(
+    options.document,
+    options.languageId,
+    options.lineNumber
+  );
+
+  if (codeLine.match(SINGLE_LINE_DEFINITION)) {
+    return false;
+  }
+
+  if (codeLine.match(ENDLESS_DEFINITION)) {
+    return false;
+  }
+
+  return openingsForLanguage(options.languageId).some((condition) =>
+    codeLine.match(condition)
+  );
 }
 
 function codeLineAt(

@@ -7,23 +7,29 @@
 
 "use strict";
 import * as vscode from "vscode";
-import { indentationFor, shouldAddEnd } from "./endwise";
-import { documentAdapter } from "./formatter";
-import { isSupportedLanguage } from "./languages";
+import { documentAdapter } from "./document";
+import {
+  buildEndwiseEditPlan,
+  EndwiseEditPlan,
+  EndwiseFormattingOptions,
+  EndwiseRange,
+} from "./planner";
 import { isLanguageEnabled } from "./settings";
 
-let applyingEndwiseEdit = false;
-
-interface EndwiseEditPlan {
-  range: vscode.Range;
-  text: string;
-  cursorPosition: vscode.Position;
+interface PlanCollectionOptions {
+  calledWithModifier: boolean;
+  requireAddedEnd: boolean;
+  requireEmptySelections: boolean;
 }
 
 /**
  * Activate plugin commands
  */
 export function activate(context: vscode.ExtensionContext) {
+  const enter = vscode.commands.registerCommand("endwise.enter", async () => {
+    await endwiseEnter();
+  });
+
   const cmdEnter = vscode.commands.registerCommand(
     "endwise.cmdEnter",
     async () => {
@@ -31,101 +37,31 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  const documentChange = vscode.workspace.onDidChangeTextDocument((event) =>
-    handleDocumentChange(event)
-  );
-
+  context.subscriptions.push(enter);
   context.subscriptions.push(cmdEnter);
-  context.subscriptions.push(documentChange);
-}
-
-async function handleDocumentChange(event: vscode.TextDocumentChangeEvent) {
-  if (applyingEndwiseEdit) {
-    return;
-  }
-
-  const editor = vscode.window.activeTextEditor;
-  const documentUri = event.document.uri.toString();
-  if (!editor || editor.document.uri.toString() !== documentUri) {
-    return;
-  }
-
-  if (!isSupportedLanguage(event.document.languageId)) {
-    return;
-  }
-
-  if (!isLanguageEnabled(event.document.languageId, event.document.uri)) {
-    return;
-  }
-
-  if (
-    !vscode.workspace
-      .getConfiguration("editor", event.document.uri)
-      .get<boolean>("formatOnType")
-  ) {
-    return;
-  }
-
-  if (!event.contentChanges.some((contentChange) => contentChange.text.includes("\n"))) {
-    return;
-  }
-
-  await waitForSelectionUpdate();
-  const plans = closingEndPlansForCurrentSelections(editor);
-  if (plans.length === 0) {
-    return;
-  }
-
-  await applyEndwiseEditPlans(editor, plans);
-}
-
-function waitForSelectionUpdate(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 25));
-}
-
-function closingEndPlan(
-  editor: vscode.TextEditor,
-  lineNumber: number,
-  currentLineNumber: number,
-  lineText: string
-): EndwiseEditPlan {
-  const closingIndentation = indentationFor(lineText);
-  const innerIndentation = closingIndentation + indentationUnit(editor);
-  const currentLine = editor.document.lineAt(currentLineNumber);
-
-  return {
-    range: new vscode.Range(
-      currentLineNumber,
-      0,
-      currentLineNumber,
-      currentLine.text.length
-    ),
-    text: `${innerIndentation}\n${closingIndentation}end`,
-    cursorPosition: new vscode.Position(currentLineNumber, innerIndentation.length),
-  };
 }
 
 async function applyEndwiseEditPlans(
   editor: vscode.TextEditor,
   plans: EndwiseEditPlan[]
-) {
+): Promise<boolean> {
   const finalSelections = finalSelectionsForPlans(plans);
 
-  applyingEndwiseEdit = true;
-  try {
-    await editor.edit((textEditor) => {
-      for (const plan of plansByDescendingPosition(plans)) {
-        textEditor.replace(plan.range, plan.text);
-      }
-    });
-  } finally {
-    applyingEndwiseEdit = false;
+  const applied = await editor.edit((textEditor) => {
+    for (const plan of plansByDescendingPosition(plans)) {
+      textEditor.replace(toVsCodeRange(plan.range), plan.text);
+    }
+  });
+
+  if (!applied) {
+    return false;
   }
 
   editor.selections = finalSelections;
 
   // Trigger inline suggestion after any modifications (e.g. GitHub Copilot)
   vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
+  return true;
 }
 
 function plansByDescendingPosition(plans: EndwiseEditPlan[]): EndwiseEditPlan[] {
@@ -165,52 +101,40 @@ function finalSelectionsForPlans(plans: EndwiseEditPlan[]): vscode.Selection[] {
 }
 
 function lineDeltaForPlan(plan: EndwiseEditPlan): number {
-  return plan.text.split("\n").length - 1 - (plan.range.end.line - plan.range.start.line);
-}
-
-function closingEndPlansForCurrentSelections(
-  editor: vscode.TextEditor
-): EndwiseEditPlan[] {
-  const document = documentAdapter(editor.document);
-  const plannedLines = new Set<number>();
-  const plans: EndwiseEditPlan[] = [];
-
-  for (const selection of editor.selections) {
-    const currentLineNumber = selection.active.line;
-    const lineNumber = currentLineNumber - 1;
-
-    if (lineNumber < 0 || plannedLines.has(lineNumber)) {
-      continue;
-    }
-
-    const lineText = editor.document.lineAt(lineNumber).text;
-    if (
-      !shouldAddEnd({
-        columnNumber: lineText.length,
-        document,
-        languageId: editor.document.languageId,
-        lineNumber,
-      })
-    ) {
-      continue;
-    }
-
-    plannedLines.add(lineNumber);
-    plans.push(closingEndPlan(editor, lineNumber, currentLineNumber, lineText));
-  }
-
-  return plans;
+  return (
+    plan.text.split("\n").length -
+    1 -
+    (plan.range.end.line - plan.range.start.line)
+  );
 }
 
 /**
  * The plugin itself
  */
 
+async function endwiseEnter() {
+  const activeEditor = vscode.window.activeTextEditor;
+  if (!activeEditor) {
+    return;
+  }
+
+  const editor: vscode.TextEditor = activeEditor;
+  const plans = enterPlans(editor);
+
+  if (plans.length === 0) {
+    await vscode.commands.executeCommand("type", { text: "\n" });
+    return;
+  }
+
+  await applyEndwiseEditPlans(editor, plans);
+}
+
 async function endwiseModifierEnter() {
   const activeEditor = vscode.window.activeTextEditor;
   if (!activeEditor) {
     return;
   }
+
   const editor: vscode.TextEditor = activeEditor;
   const plans = modifierEnterPlans(editor);
 
@@ -221,76 +145,86 @@ async function endwiseModifierEnter() {
   await applyEndwiseEditPlans(editor, plans);
 }
 
+function enterPlans(editor: vscode.TextEditor): EndwiseEditPlan[] {
+  return plansForSelections(editor, {
+    calledWithModifier: false,
+    requireAddedEnd: true,
+    requireEmptySelections: true,
+  });
+}
+
 function modifierEnterPlans(editor: vscode.TextEditor): EndwiseEditPlan[] {
+  return plansForSelections(editor, {
+    calledWithModifier: true,
+    requireAddedEnd: false,
+    requireEmptySelections: false,
+  });
+}
+
+function plansForSelections(
+  editor: vscode.TextEditor,
+  options: PlanCollectionOptions
+): EndwiseEditPlan[] {
   const document = documentAdapter(editor.document);
   const languageEnabled = isLanguageEnabled(
     editor.document.languageId,
     editor.document.uri
   );
+  const formattingOptions = formattingOptionsForEditor(editor);
   const plannedLines = new Set<number>();
   const plans: EndwiseEditPlan[] = [];
 
   for (const selection of editor.selections) {
+    if (options.requireEmptySelections && !selection.isEmpty) {
+      return [];
+    }
+
     const lineNumber = selection.active.line;
     if (plannedLines.has(lineNumber)) {
       continue;
     }
 
-    const lineText = editor.document.lineAt(lineNumber).text;
-    const lineLength = lineText.length;
-    const shouldClose =
-      languageEnabled &&
-      shouldAddEnd({
-        calledWithModifier: true,
-        columnNumber: selection.active.character,
-        document,
-        languageId: editor.document.languageId,
-        lineNumber,
-      });
+    const plan = buildEndwiseEditPlan({
+      calledWithModifier: options.calledWithModifier,
+      columnNumber: selection.active.character,
+      document,
+      formattingOptions,
+      languageEnabled,
+      languageId: editor.document.languageId,
+      lineNumber,
+    });
+
+    if (!plan || (options.requireAddedEnd && !plan.addedEnd)) {
+      if (options.requireAddedEnd) {
+        return [];
+      }
+      continue;
+    }
 
     plannedLines.add(lineNumber);
-    plans.push(
-      shouldClose
-        ? closingEndModifierPlan(editor, lineNumber, lineText)
-        : plainLineBreakPlan(lineNumber, lineLength)
-    );
+    plans.push(plan);
   }
 
   return plans;
 }
 
-function closingEndModifierPlan(
-  editor: vscode.TextEditor,
-  lineNumber: number,
-  lineText: string
-): EndwiseEditPlan {
-  const closingIndentation = indentationFor(lineText);
-  const innerIndentation = closingIndentation + indentationUnit(editor);
-  const lineLength = lineText.length;
+function formattingOptionsForEditor(
+  editor: vscode.TextEditor
+): EndwiseFormattingOptions {
+  const tabSize =
+    typeof editor.options.tabSize === "number" ? editor.options.tabSize : 4;
 
   return {
-    range: new vscode.Range(lineNumber, lineLength, lineNumber, lineLength),
-    text: `\n${innerIndentation}\n${closingIndentation}end`,
-    cursorPosition: new vscode.Position(lineNumber + 1, innerIndentation.length),
+    insertSpaces: editor.options.insertSpaces !== false,
+    tabSize,
   };
 }
 
-function plainLineBreakPlan(
-  lineNumber: number,
-  lineLength: number
-): EndwiseEditPlan {
-  return {
-    range: new vscode.Range(lineNumber, lineLength, lineNumber, lineLength),
-    text: "\n",
-    cursorPosition: new vscode.Position(lineNumber + 1, 0),
-  };
-}
-
-function indentationUnit(editor: vscode.TextEditor): string {
-  if (editor.options.insertSpaces === false) {
-    return "\t";
-  }
-
-  const tabSize = typeof editor.options.tabSize === "number" ? editor.options.tabSize : 4;
-  return " ".repeat(tabSize);
+function toVsCodeRange(range: EndwiseRange): vscode.Range {
+  return new vscode.Range(
+    range.start.line,
+    range.start.character,
+    range.end.line,
+    range.end.character
+  );
 }
