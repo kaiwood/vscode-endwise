@@ -1,8 +1,8 @@
 import {
+  closingKeywordForLine,
   EndwiseDocument,
   indentationFor,
   lineOpensBlock,
-  shouldAddEnd,
 } from "./endwise";
 
 export interface EndwiseFormattingOptions {
@@ -57,7 +57,8 @@ function buildEnterCommandPlan(
     return undefined;
   }
 
-  if (!shouldCloseBlock(options, false)) {
+  const close = closingKeywordForBlock(options, false);
+  if (!close) {
     return undefined;
   }
 
@@ -76,7 +77,7 @@ function buildEnterCommandPlan(
       options.lineNumber,
       lineLength
     ),
-    text: `\n${innerIndentation}\n${closingIndentation}end`,
+    text: `\n${innerIndentation}\n${closingIndentation}${close}`,
   };
 }
 
@@ -98,7 +99,8 @@ function buildModifierPlan(
   const innerIndentation =
     closingIndentation + indentationUnit(options.formattingOptions);
 
-  if (!shouldCloseBlock(options, true)) {
+  const close = closingKeywordForBlock(options, true);
+  if (!close) {
     if (!lineOpensBlock(options)) {
       return buildPlainNewlinePlan(options, lineLength);
     }
@@ -125,7 +127,7 @@ function buildModifierPlan(
       options.lineNumber,
       lineLength
     ),
-    text: `\n${innerIndentation}\n${closingIndentation}end`,
+    text: `\n${innerIndentation}\n${closingIndentation}${close}`,
   };
 }
 
@@ -146,11 +148,11 @@ function buildPlainNewlinePlan(
   };
 }
 
-function shouldCloseBlock(
+function closingKeywordForBlock(
   options: BuildEndwiseEditPlanOptions,
   calledWithModifier: boolean
-): boolean {
-  return shouldAddEnd({
+): string | undefined {
+  return closingKeywordForLine({
     calledWithModifier,
     columnNumber: options.columnNumber,
     document: options.document,

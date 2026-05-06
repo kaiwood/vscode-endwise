@@ -112,7 +112,7 @@ async function withInsertFinalNewlineEnabled(run: () => Promise<void>) {
 }
 
 async function withEndwiseLanguageEnabled(
-  language: "ruby" | "crystal" | "lua",
+  language: "ruby" | "crystal" | "lua" | "shellscript",
   value: boolean,
   run: () => Promise<void>,
 ) {
@@ -172,6 +172,27 @@ suite("Extension commands", () => {
       ) ?? [];
 
     assert.ok(!conditions.some((condition) => condition.includes("vim")));
+  });
+
+  test("contributes keybindings for shellscript", async () => {
+    interface PackageJson {
+      contributes?: {
+        keybindings?: { when?: string }[];
+      };
+    }
+
+    const packageJson = JSON.parse(
+      await fs.readFile(
+        path.join(__dirname, "..", "..", "..", "package.json"),
+        "utf8",
+      ),
+    ) as PackageJson;
+    const conditions =
+      packageJson.contributes?.keybindings?.map(
+        (keybinding) => keybinding.when ?? "",
+      ) ?? [];
+
+    assert.ok(conditions.every((condition) => condition.includes("shellscript")));
   });
 
   test("adds end from the middle of a line with the modifier command", async () => {
@@ -292,6 +313,22 @@ suite("Extension commands", () => {
       await vscode.commands.executeCommand("endwise.cmdEnter");
 
       assert.ok(!editor.document.getText().includes("end"));
+      assert.strictEqual(editor.selection.active.line, 1);
+    });
+  });
+
+  test("modifier command inserts a plain line break when shellscript is disabled", async () => {
+    await withEndwiseLanguageEnabled("shellscript", false, async () => {
+      const editor = await openDocument(
+        "while true; do",
+        "shellscript",
+        0,
+        2,
+      );
+
+      await vscode.commands.executeCommand("endwise.cmdEnter");
+
+      assert.strictEqual(editor.document.getText(), "while true; do\n");
       assert.strictEqual(editor.selection.active.line, 1);
     });
   });

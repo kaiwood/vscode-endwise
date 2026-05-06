@@ -1,7 +1,7 @@
 {
   "name": "endwise",
   "displayName": "endwise",
-  "description": "Wisely add \"end\" in Ruby, Crystal, and Lua.",
+  "description": "Wisely add closing keywords in Ruby, Crystal, Lua, and shell scripts.",
   "version": "1.5.1",
   "preview": false,
   "publisher": "kaiwood",
@@ -21,7 +21,8 @@
   "activationEvents": [
     "onLanguage:ruby",
     "onLanguage:crystal",
-    "onLanguage:lua"
+    "onLanguage:lua",
+    "onLanguage:shellscript"
   ],
   "extensionKind": [
     "ui",
@@ -46,6 +47,11 @@
           "type": "boolean",
           "default": true,
           "description": "Enable Endwise behavior for Lua."
+        },
+        "endwise.languages.shellscript.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Endwise behavior for shell scripts."
         }
       }
     },
@@ -53,13 +59,13 @@
       {
         "command": "endwise.enter",
         "key": "enter",
-        "when": "editorTextFocus && editorLangId =~ /^ruby$|^crystal$|^lua$/ && !suggestWidgetVisible && !renameInputVisible && !inSnippetMode && !editorReadonly"
+        "when": "editorTextFocus && editorLangId =~ /^ruby$|^crystal$|^lua$|^shellscript$/ && !suggestWidgetVisible && !renameInputVisible && !inSnippetMode && !editorReadonly"
       },
       {
         "command": "endwise.cmdEnter",
         "key": "ctrl+enter",
         "mac": "cmd+enter",
-        "when": "editorTextFocus && editorLangId =~ /^ruby$|^crystal$|^lua$/"
+        "when": "editorTextFocus && editorLangId =~ /^ruby$|^crystal$|^lua$|^shellscript$/"
       }
     ]
   },

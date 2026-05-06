@@ -8,7 +8,13 @@ export interface CommentSyntax {
   block: BlockCommentSyntax[];
 }
 
+export interface BlockOpeningSyntax {
+  close: string;
+  pattern: RegExp;
+}
+
 export interface LanguageDefinition {
+  closePattern?: RegExp;
   comments: CommentSyntax;
-  openings: RegExp[];
+  openings: BlockOpeningSyntax[];
 }

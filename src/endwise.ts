@@ -1,5 +1,9 @@
 import { languageDefinitionFor } from "./languages";
-import { BlockCommentSyntax, CommentSyntax } from "./languages/types";
+import {
+  BlockCommentSyntax,
+  BlockOpeningSyntax,
+  CommentSyntax,
+} from "./languages/types";
 
 const SINGLE_LINE_DEFINITION = /;\s*end[\s;]*$/;
 const ENDLESS_DEFINITION = /^\s*?def\s+[^\s(]+\s*(?:\(.*\))?\s+=/;
@@ -25,11 +29,19 @@ export interface EndwiseLineOptions {
 }
 
 export function openingsForLanguage(languageId: string): RegExp[] {
+  return openingSyntaxForLanguage(languageId).map((opening) => opening.pattern);
+}
+
+function openingSyntaxForLanguage(languageId: string): BlockOpeningSyntax[] {
   return languageDefinitionFor(languageId)?.openings ?? [];
 }
 
 function commentSyntaxForLanguage(languageId: string): CommentSyntax {
   return languageDefinitionFor(languageId)?.comments ?? { line: [], block: [] };
+}
+
+function closePatternForLanguage(languageId: string): RegExp {
+  return languageDefinitionFor(languageId)?.closePattern ?? /^end/;
 }
 
 export function indentationFor(lineText: string): string {
@@ -59,8 +71,8 @@ export function lineOpensBlock(options: EndwiseLineOptions): boolean {
     return false;
   }
 
-  return openingsForLanguage(options.languageId).some((condition) =>
-    codeLine.match(condition)
+  return openingSyntaxForLanguage(options.languageId).some((opening) =>
+    codeLine.match(opening.pattern)
   );
 }
 
@@ -148,8 +160,14 @@ function stripLineComment(lineText: string, lineComments: string[]): string {
 }
 
 export function shouldAddEnd(options: ShouldAddEndOptions): boolean {
+  return closingKeywordForLine(options) !== undefined;
+}
+
+export function closingKeywordForLine(
+  options: ShouldAddEndOptions
+): string | undefined {
   const calledWithModifier = options.calledWithModifier ?? false;
-  const openings = openingsForLanguage(options.languageId);
+  const openings = openingSyntaxForLanguage(options.languageId);
   const lineText = options.document.lineAt(options.lineNumber);
   const codeLine = codeLineAt(
     options.document,
@@ -160,19 +178,19 @@ export function shouldAddEnd(options: ShouldAddEndOptions): boolean {
 
   // Do not close if enter key is pressed in the middle of a line, except when a modifier key is used.
   if (!calledWithModifier && lineText.length > options.columnNumber) {
-    return false;
+    return undefined;
   }
 
   if (codeLine.match(SINGLE_LINE_DEFINITION)) {
-    return false;
+    return undefined;
   }
 
   if (codeLine.match(ENDLESS_DEFINITION)) {
-    return false;
+    return undefined;
   }
 
-  for (const condition of openings) {
-    if (!codeLine.match(condition)) {
+  for (const opening of openings) {
+    if (!codeLine.match(opening.pattern)) {
       continue;
     }
 
@@ -185,7 +203,7 @@ export function shouldAddEnd(options: ShouldAddEndOptions): boolean {
       ln++
     ) {
       if (documentLineCount <= ln + 1) {
-        return true;
+        return opening.close;
       }
 
       const line = options.document.lineAt(ln + 1);
@@ -194,29 +212,43 @@ export function shouldAddEnd(options: ShouldAddEndOptions): boolean {
         options.languageId,
         ln + 1
       );
-      const lineStartsWithEnd = codeLineBelow.trim().startsWith("end");
+      const lineClosesAnyBlock = closesBlock(codeLineBelow, options.languageId);
+      const lineClosesThisBlock = closesWith(codeLineBelow, opening.close);
 
-      if (currentIndentation > indentationFor(line) && lineStartsWithEnd) {
-        return true;
+      if (currentIndentation > indentationFor(line) && lineClosesAnyBlock) {
+        return opening.close;
       }
 
       if (currentIndentation === indentationFor(line)) {
-        for (const innerCondition of openings) {
-          if (codeLineBelow.match(innerCondition)) {
+        for (const innerOpening of openings) {
+          if (codeLineBelow.match(innerOpening.pattern)) {
             stackCount += 1;
             break;
           }
         }
 
-        if (lineStartsWithEnd && stackCount > 0) {
+        if (lineClosesAnyBlock && stackCount > 0) {
           stackCount -= 1;
           continue;
-        } else if (lineStartsWithEnd) {
-          return false;
+        } else if (lineClosesThisBlock) {
+          return undefined;
         }
       }
     }
   }
 
-  return false;
+  return undefined;
+}
+
+function closesBlock(codeLine: string, languageId: string): boolean {
+  return Boolean(codeLine.trim().match(closePatternForLanguage(languageId)));
+}
+
+function closesWith(codeLine: string, close: string): boolean {
+  return Boolean(codeLine.trim().match(closePatternForClose(close)));
+}
+
+function closePatternForClose(close: string): RegExp {
+  const escapedClose = close.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`^${escapedClose}\\b`);
 }

@@ -6,10 +6,10 @@ export const lua: LanguageDefinition = {
     block: [{ start: /^\s*--\[\[/, end: /\]\]/ }],
   },
   openings: [
-    /^\s*do\s*$/,
-    /^\s*while\b.*\bdo\s*$/,
-    /^\s*if\b.*\bthen\s*$/,
-    /^\s*for\b.*\bdo\s*$/,
-    /^\s*(?:local\s+)?function\b.*\)\s*$/,
+    { pattern: /^\s*do\s*$/, close: "end" },
+    { pattern: /^\s*while\b.*\bdo\s*$/, close: "end" },
+    { pattern: /^\s*if\b.*\bthen\s*$/, close: "end" },
+    { pattern: /^\s*for\b.*\bdo\s*$/, close: "end" },
+    { pattern: /^\s*(?:local\s+)?function\b.*\)\s*$/, close: "end" },
   ],
 };

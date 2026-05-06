@@ -111,11 +111,43 @@ suite("Endwise block detection", () => {
     }
   });
 
+  test("detects shellscript openings", () => {
+    assert.strictEqual(isSupportedLanguage("shellscript"), true);
+
+    const openings = [
+      "if [ -f file ]; then",
+      "while read -r line; do",
+      "until ready; do",
+      "for file in *; do",
+      'case "$value" in',
+    ];
+
+    for (const opening of openings) {
+      assert.strictEqual(closes("shellscript", opening), true, opening);
+    }
+  });
+
   test("skips already balanced blocks", () => {
     assert.strictEqual(closes("ruby", "if condition\nend"), false);
     assert.strictEqual(
       closes("ruby", "if condition\nif other\nend\nend"),
       false
+    );
+    assert.strictEqual(
+      closes("shellscript", "if [ -f file ]; then\nfi"),
+      false
+    );
+    assert.strictEqual(
+      closes("shellscript", "for file in *; do\ndone"),
+      false
+    );
+    assert.strictEqual(
+      closes("shellscript", 'case "$value" in\nesac'),
+      false
+    );
+    assert.strictEqual(
+      closes("shellscript", "while true; do\nfi"),
+      true
     );
   });
 
@@ -154,6 +186,15 @@ suite("Endwise block detection", () => {
     assert.strictEqual(closes("lua", "-- if condition then"), false);
     assert.strictEqual(closes("lua", "if condition then -- comment"), true);
     assert.strictEqual(closes("lua", "--[[\nif condition then\n]]"), false);
+  });
+
+  test("ignores shellscript comments", () => {
+    assert.strictEqual(closes("shellscript", "# if condition; then"), false);
+    assert.strictEqual(closes("shellscript", "echo value # do"), false);
+    assert.strictEqual(
+      closes("shellscript", "if [ -f file ]; then # comment"),
+      true
+    );
   });
 
   test("keeps Lua same-line block comments from affecting later lines", () => {

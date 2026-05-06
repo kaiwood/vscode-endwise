@@ -6,6 +6,7 @@
 - Settings panel to turn off auto-insertion per language
 - Keep command-based `enter` handling aligned with the current VS Code engine.
 - Ignore comments when deciding whether to add an `end`.
+- Add Bash support through VS Code's `shellscript` language mode.
 
 ## v1.5.0
 

@@ -61,6 +61,21 @@ suite("Endwise edit planner", () => {
     assert.strictEqual(result?.text, "\n  \nend");
   });
 
+  test("builds shellscript plans with matching close words", () => {
+    assert.strictEqual(
+      plan("if [ -f file ]; then", { languageId: "shellscript" })?.text,
+      "\n  \nfi"
+    );
+    assert.strictEqual(
+      plan("for file in *; do", { languageId: "shellscript" })?.text,
+      "\n  \ndone"
+    );
+    assert.strictEqual(
+      plan('case "$value" in', { languageId: "shellscript" })?.text,
+      "\n  \nesac"
+    );
+  });
+
   test("preserves command indentation", () => {
     const result = plan("  if condition", {
       formattingOptions: { insertSpaces: true, tabSize: 4 },
