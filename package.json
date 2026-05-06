@@ -1,7 +1,7 @@
 {
   "name": "endwise",
   "displayName": "endwise",
-  "description": "Wisely add \"end\" in Ruby.",
+  "description": "Wisely add \"end\" in Ruby, Crystal, and Lua.",
   "version": "1.5.1",
   "preview": false,
   "publisher": "kaiwood",
@@ -20,7 +20,8 @@
   ],
   "activationEvents": [
     "onLanguage:ruby",
-    "onLanguage:crystal"
+    "onLanguage:crystal",
+    "onLanguage:lua"
   ],
   "extensionKind": [
     "ui",
@@ -40,6 +41,11 @@
           "type": "boolean",
           "default": true,
           "description": "Enable Endwise behavior for Crystal."
+        },
+        "endwise.languages.lua.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Endwise behavior for Lua."
         }
       }
     },
@@ -47,13 +53,13 @@
       {
         "command": "endwise.enter",
         "key": "enter",
-        "when": "editorTextFocus && editorLangId =~ /^ruby$|^crystal$/ && !suggestWidgetVisible && !renameInputVisible && !inSnippetMode && !editorReadonly"
+        "when": "editorTextFocus && editorLangId =~ /^ruby$|^crystal$|^lua$/ && !suggestWidgetVisible && !renameInputVisible && !inSnippetMode && !editorReadonly"
       },
       {
         "command": "endwise.cmdEnter",
         "key": "ctrl+enter",
         "mac": "cmd+enter",
-        "when": "editorTextFocus && editorLangId =~ /^ruby$|^crystal$/"
+        "when": "editorTextFocus && editorLangId =~ /^ruby$|^crystal$|^lua$/"
       }
     ]
   },

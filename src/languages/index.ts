@@ -1,14 +1,16 @@
 import { crystal } from "./crystal";
+import { lua } from "./lua";
 import { ruby } from "./ruby";
 import { LanguageDefinition } from "./types";
 
-export const SUPPORTED_LANGUAGES = ["ruby", "crystal"] as const;
+export const SUPPORTED_LANGUAGES = ["ruby", "crystal", "lua"] as const;
 
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 const LANGUAGE_DEFINITIONS: Record<SupportedLanguage, LanguageDefinition> = {
   ruby,
   crystal,
+  lua,
 };
 
 export function isSupportedLanguage(

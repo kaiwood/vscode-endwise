@@ -20,14 +20,24 @@ class TestDocument implements EndwiseDocument {
 
 function closes(languageId: string, text: string, calledWithModifier = false) {
   const document = new TestDocument(text);
-  const lineText = document.lineAt(0);
+
+  return closesAt(languageId, document, 0, calledWithModifier);
+}
+
+function closesAt(
+  languageId: string,
+  document: TestDocument,
+  lineNumber: number,
+  calledWithModifier = false
+) {
+  const lineText = document.lineAt(lineNumber);
 
   return shouldAddEnd({
     calledWithModifier,
     columnNumber: lineText.length,
     document,
     languageId,
-    lineNumber: 0,
+    lineNumber,
   });
 }
 
@@ -83,6 +93,24 @@ suite("Endwise block detection", () => {
     }
   });
 
+  test("detects Lua openings", () => {
+    assert.strictEqual(isSupportedLanguage("lua"), true);
+
+    const openings = [
+      "if condition then",
+      "while condition do",
+      "for i = 1, 10 do",
+      "for key, value in pairs(items) do",
+      "function name(arg)",
+      "local function name(arg)",
+      "do",
+    ];
+
+    for (const opening of openings) {
+      assert.strictEqual(closes("lua", opening), true, opening);
+    }
+  });
+
   test("skips already balanced blocks", () => {
     assert.strictEqual(closes("ruby", "if condition\nend"), false);
     assert.strictEqual(
@@ -120,6 +148,23 @@ suite("Endwise block detection", () => {
 
   test("ignores Crystal line comments", () => {
     assert.strictEqual(closes("crystal", "# enum Color"), false);
+  });
+
+  test("ignores Lua comments", () => {
+    assert.strictEqual(closes("lua", "-- if condition then"), false);
+    assert.strictEqual(closes("lua", "if condition then -- comment"), true);
+    assert.strictEqual(closes("lua", "--[[\nif condition then\n]]"), false);
+  });
+
+  test("keeps Lua same-line block comments from affecting later lines", () => {
+    const document = new TestDocument("--[[ if condition then ]]\nif condition then");
+
+    assert.strictEqual(closesAt("lua", document, 1), true);
+  });
+
+  test("does not add end for Lua repeat until blocks", () => {
+    assert.strictEqual(closes("lua", "repeat"), false);
+    assert.strictEqual(closes("lua", "until condition"), false);
   });
 
   test("skips middle-of-line enter unless modifier is used", () => {

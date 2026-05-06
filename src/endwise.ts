@@ -101,7 +101,19 @@ function isInsideBlockComment(
     }
 
     for (const blockComment of blockComments) {
-      if (line.match(blockComment.start)) {
+      const startMatch = line.match(blockComment.start);
+      if (startMatch) {
+        const startsAt = startMatch.index ?? 0;
+        const restOfLine = line.slice(startsAt + startMatch[0].length);
+        const endsOnSameLine = Boolean(restOfLine.match(blockComment.end));
+
+        if (endsOnSameLine) {
+          if (ln === lineNumber) {
+            return true;
+          }
+          continue;
+        }
+
         activeBlockComment = blockComment;
         if (ln === lineNumber) {
           return true;

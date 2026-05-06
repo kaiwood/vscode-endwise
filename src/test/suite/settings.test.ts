@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 import { isLanguageEnabled } from "../../settings";
 
 async function withLanguageEnabledSetting(
-  languageId: "ruby" | "crystal",
+  languageId: "ruby" | "crystal" | "lua",
   value: boolean | undefined,
   run: () => Promise<void>
 ) {
@@ -32,6 +32,12 @@ suite("Endwise settings", () => {
     });
   });
 
+  test("enables Lua by default", async () => {
+    await withLanguageEnabledSetting("lua", undefined, async () => {
+      assert.strictEqual(isLanguageEnabled("lua"), true);
+    });
+  });
+
   test("disables Ruby when configured off", async () => {
     await withLanguageEnabledSetting("ruby", false, async () => {
       assert.strictEqual(isLanguageEnabled("ruby"), false);
@@ -41,6 +47,12 @@ suite("Endwise settings", () => {
   test("disables Crystal when configured off", async () => {
     await withLanguageEnabledSetting("crystal", false, async () => {
       assert.strictEqual(isLanguageEnabled("crystal"), false);
+    });
+  });
+
+  test("disables Lua when configured off", async () => {
+    await withLanguageEnabledSetting("lua", false, async () => {
+      assert.strictEqual(isLanguageEnabled("lua"), false);
     });
   });
 });

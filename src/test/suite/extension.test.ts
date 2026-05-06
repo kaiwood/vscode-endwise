@@ -112,7 +112,7 @@ async function withInsertFinalNewlineEnabled(run: () => Promise<void>) {
 }
 
 async function withEndwiseLanguageEnabled(
-  language: "ruby" | "crystal",
+  language: "ruby" | "crystal" | "lua",
   value: boolean,
   run: () => Promise<void>,
 ) {
@@ -277,6 +277,17 @@ suite("Extension commands", () => {
   test("modifier command inserts a plain line break when Ruby is disabled", async () => {
     await withEndwiseLanguageEnabled("ruby", false, async () => {
       const editor = await openDocument("if condition", "ruby", 0, 2);
+
+      await vscode.commands.executeCommand("endwise.cmdEnter");
+
+      assert.ok(!editor.document.getText().includes("end"));
+      assert.strictEqual(editor.selection.active.line, 1);
+    });
+  });
+
+  test("modifier command inserts a plain line break when Lua is disabled", async () => {
+    await withEndwiseLanguageEnabled("lua", false, async () => {
+      const editor = await openDocument("if condition then", "lua", 0, 2);
 
       await vscode.commands.executeCommand("endwise.cmdEnter");
 
