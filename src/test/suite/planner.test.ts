@@ -61,6 +61,17 @@ suite("Endwise edit planner", () => {
     assert.strictEqual(result?.text, "\n  \nend");
   });
 
+  test("builds enter command plans for Elixir blocks", () => {
+    assert.strictEqual(
+      plan("defmodule Foo do", { languageId: "elixir" })?.text,
+      "\n  \nend"
+    );
+    assert.strictEqual(
+      plan("Enum.map(items, fn item ->", { languageId: "elixir" })?.text,
+      "\n  \nend"
+    );
+  });
+
   test("builds shellscript plans with matching close words", () => {
     assert.strictEqual(
       plan("if [ -f file ]; then", { languageId: "shellscript" })?.text,

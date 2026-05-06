@@ -93,6 +93,31 @@ suite("Endwise block detection", () => {
     }
   });
 
+  test("detects Elixir openings", () => {
+    assert.strictEqual(isSupportedLanguage("elixir"), true);
+
+    const openings = [
+      "defmodule Foo do",
+      "def foo do",
+      "defp foo do",
+      "if condition do",
+      "unless condition do",
+      "case value do",
+      "cond do",
+      "receive do",
+      "try do",
+      "with {:ok, x} <- value do",
+      "quote do",
+      "fn",
+      "fn value ->",
+      "Enum.map(items, fn item ->",
+    ];
+
+    for (const opening of openings) {
+      assert.strictEqual(closes("elixir", opening), true, opening);
+    }
+  });
+
   test("detects Lua openings", () => {
     assert.strictEqual(isSupportedLanguage("lua"), true);
 
@@ -149,6 +174,7 @@ suite("Endwise block detection", () => {
       closes("shellscript", "while true; do\nfi"),
       true
     );
+    assert.strictEqual(closes("elixir", "if condition do\nend"), false);
   });
 
   test("skips unsupported languages", () => {
@@ -182,6 +208,12 @@ suite("Endwise block detection", () => {
     assert.strictEqual(closes("crystal", "# enum Color"), false);
   });
 
+  test("ignores Elixir line comments", () => {
+    assert.strictEqual(closes("elixir", "# if condition do"), false);
+    assert.strictEqual(closes("elixir", "value # do"), false);
+    assert.strictEqual(closes("elixir", "if condition do # comment"), true);
+  });
+
   test("ignores Lua comments", () => {
     assert.strictEqual(closes("lua", "-- if condition then"), false);
     assert.strictEqual(closes("lua", "if condition then -- comment"), true);
@@ -206,6 +238,12 @@ suite("Endwise block detection", () => {
   test("does not add end for Lua repeat until blocks", () => {
     assert.strictEqual(closes("lua", "repeat"), false);
     assert.strictEqual(closes("lua", "until condition"), false);
+  });
+
+  test("does not add end for inline Elixir forms", () => {
+    assert.strictEqual(closes("elixir", "def foo, do: :ok"), false);
+    assert.strictEqual(closes("elixir", "if true, do: :ok"), false);
+    assert.strictEqual(closes("elixir", "fn x -> x end"), false);
   });
 
   test("skips middle-of-line enter unless modifier is used", () => {

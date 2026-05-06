@@ -112,7 +112,7 @@ async function withInsertFinalNewlineEnabled(run: () => Promise<void>) {
 }
 
 async function withEndwiseLanguageEnabled(
-  language: "ruby" | "crystal" | "lua" | "shellscript",
+  language: "ruby" | "crystal" | "elixir" | "lua" | "shellscript",
   value: boolean,
   run: () => Promise<void>,
 ) {
@@ -174,7 +174,7 @@ suite("Extension commands", () => {
     assert.ok(!conditions.some((condition) => condition.includes("vim")));
   });
 
-  test("contributes keybindings for shellscript", async () => {
+  test("contributes keybindings for supported languages", async () => {
     interface PackageJson {
       contributes?: {
         keybindings?: { when?: string }[];
@@ -192,7 +192,12 @@ suite("Extension commands", () => {
         (keybinding) => keybinding.when ?? "",
       ) ?? [];
 
-    assert.ok(conditions.every((condition) => condition.includes("shellscript")));
+    for (const language of ["ruby", "crystal", "elixir", "lua", "shellscript"]) {
+      assert.ok(
+        conditions.every((condition) => condition.includes(language)),
+        language,
+      );
+    }
   });
 
   test("adds end from the middle of a line with the modifier command", async () => {

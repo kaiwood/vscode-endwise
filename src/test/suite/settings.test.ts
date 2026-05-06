@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 import { isLanguageEnabled } from "../../settings";
 
 async function withLanguageEnabledSetting(
-  languageId: "ruby" | "crystal" | "lua" | "shellscript",
+  languageId: "ruby" | "crystal" | "elixir" | "lua" | "shellscript",
   value: boolean | undefined,
   run: () => Promise<void>
 ) {
@@ -32,6 +32,12 @@ suite("Endwise settings", () => {
     });
   });
 
+  test("enables Elixir by default", async () => {
+    await withLanguageEnabledSetting("elixir", undefined, async () => {
+      assert.strictEqual(isLanguageEnabled("elixir"), true);
+    });
+  });
+
   test("enables Lua by default", async () => {
     await withLanguageEnabledSetting("lua", undefined, async () => {
       assert.strictEqual(isLanguageEnabled("lua"), true);
@@ -53,6 +59,12 @@ suite("Endwise settings", () => {
   test("disables Crystal when configured off", async () => {
     await withLanguageEnabledSetting("crystal", false, async () => {
       assert.strictEqual(isLanguageEnabled("crystal"), false);
+    });
+  });
+
+  test("disables Elixir when configured off", async () => {
+    await withLanguageEnabledSetting("elixir", false, async () => {
+      assert.strictEqual(isLanguageEnabled("elixir"), false);
     });
   });
 

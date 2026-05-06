@@ -7,6 +7,7 @@
 - Keep command-based `enter` handling aligned with the current VS Code engine.
 - Ignore comments when deciding whether to add an `end`.
 - Add Bash support through VS Code's `shellscript` language mode.
+- Add Elixir support.
 
 ## v1.5.0
 
