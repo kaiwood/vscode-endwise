@@ -3,7 +3,14 @@ import * as vscode from "vscode";
 import { isLanguageEnabled } from "../../settings";
 
 async function withLanguageEnabledSetting(
-  languageId: "ruby" | "crystal" | "elixir" | "julia" | "lua" | "shellscript",
+  languageId:
+    | "ruby"
+    | "crystal"
+    | "elixir"
+    | "julia"
+    | "lua"
+    | "makefile"
+    | "shellscript",
   value: boolean | undefined,
   run: () => Promise<void>
 ) {
@@ -50,6 +57,12 @@ suite("Endwise settings", () => {
     });
   });
 
+  test("enables Makefiles by default", async () => {
+    await withLanguageEnabledSetting("makefile", undefined, async () => {
+      assert.strictEqual(isLanguageEnabled("makefile"), true);
+    });
+  });
+
   test("enables shellscript by default", async () => {
     await withLanguageEnabledSetting("shellscript", undefined, async () => {
       assert.strictEqual(isLanguageEnabled("shellscript"), true);
@@ -83,6 +96,12 @@ suite("Endwise settings", () => {
   test("disables Lua when configured off", async () => {
     await withLanguageEnabledSetting("lua", false, async () => {
       assert.strictEqual(isLanguageEnabled("lua"), false);
+    });
+  });
+
+  test("disables Makefiles when configured off", async () => {
+    await withLanguageEnabledSetting("makefile", false, async () => {
+      assert.strictEqual(isLanguageEnabled("makefile"), false);
     });
   });
 

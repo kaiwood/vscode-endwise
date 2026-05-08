@@ -179,6 +179,21 @@ suite("Endwise block detection", () => {
     }
   });
 
+  test("detects Makefile conditional openings", () => {
+    assert.strictEqual(isSupportedLanguage("makefile"), true);
+
+    const openings = [
+      "ifeq ($(CC),gcc)",
+      "ifneq ($(CC),gcc)",
+      "ifdef DEBUG",
+      "ifndef RELEASE",
+    ];
+
+    for (const opening of openings) {
+      assert.strictEqual(closes("makefile", opening), true, opening);
+    }
+  });
+
   test("skips already balanced blocks", () => {
     assert.strictEqual(closes("ruby", "if condition\nend"), false);
     assert.strictEqual(
@@ -201,6 +216,7 @@ suite("Endwise block detection", () => {
       closes("shellscript", "while true; do\nfi"),
       true
     );
+    assert.strictEqual(closes("makefile", "ifdef DEBUG\nendif"), false);
     assert.strictEqual(closes("elixir", "if condition do\nend"), false);
     assert.strictEqual(closes("julia", "if condition\nend"), false);
   });
@@ -261,6 +277,12 @@ suite("Endwise block detection", () => {
       closes("shellscript", "if [ -f file ]; then # comment"),
       true
     );
+  });
+
+  test("ignores Makefile comments", () => {
+    assert.strictEqual(closes("makefile", "# ifdef DEBUG"), false);
+    assert.strictEqual(closes("makefile", "value = 1 # ifdef DEBUG"), false);
+    assert.strictEqual(closes("makefile", "ifdef DEBUG # comment"), true);
   });
 
   test("keeps Lua same-line block comments from affecting later lines", () => {

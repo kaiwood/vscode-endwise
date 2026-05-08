@@ -1,6 +1,6 @@
 # vscode-endwise
 
-This is an extension that wisely adds closing keywords to code structures in languages like Ruby, Crystal, Elixir, Julia, Lua, or Bash while keeping the correct indentation levels. Inspired by tpope's [endwise.vim](https://github.com/tpope/vim-endwise).
+This is an extension that wisely adds closing keywords to code structures in languages like Ruby, Crystal, Elixir, Julia, Lua, Makefiles, or Bash while keeping the correct indentation levels. Inspired by tpope's [endwise.vim](https://github.com/tpope/vim-endwise).
 
 ![Endwise](./images/endwise.gif)
 
@@ -16,5 +16,6 @@ Hit `enter` after a block opener to get your block automagically closed.
   - [x]  Elixir
   - [x]  Julia
   - [x]  Lua
+  - [x]  Makefiles
   - [x]  Bash
 - [ ] Add a gif with code that actually makes sense 🙄

@@ -1,7 +1,7 @@
 {
   "name": "endwise",
   "displayName": "endwise",
-  "description": "Wisely add closing keywords in Ruby, Crystal, Elixir, Julia, Lua, and shell scripts.",
+  "description": "Wisely add closing keywords in Ruby, Crystal, Elixir, Julia, Lua, Makefiles, and shell scripts.",
   "version": "2.0.0",
   "preview": false,
   "publisher": "kaiwood",
@@ -24,6 +24,7 @@
     "onLanguage:elixir",
     "onLanguage:julia",
     "onLanguage:lua",
+    "onLanguage:makefile",
     "onLanguage:shellscript"
   ],
   "extensionKind": [
@@ -60,6 +61,11 @@
           "default": true,
           "description": "Enable Endwise behavior for Lua."
         },
+        "endwise.languages.makefile.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Endwise behavior for Makefiles."
+        },
         "endwise.languages.shellscript.enabled": {
           "type": "boolean",
           "default": true,
@@ -71,13 +77,13 @@
       {
         "command": "endwise.enter",
         "key": "enter",
-        "when": "editorTextFocus && editorLangId =~ /^ruby$|^crystal$|^elixir$|^julia$|^lua$|^shellscript$/ && !suggestWidgetVisible && !renameInputVisible && !inSnippetMode && !editorReadonly"
+        "when": "editorTextFocus && editorLangId =~ /^ruby$|^crystal$|^elixir$|^julia$|^lua$|^makefile$|^shellscript$/ && !suggestWidgetVisible && !renameInputVisible && !inSnippetMode && !editorReadonly"
       },
       {
         "command": "endwise.cmdEnter",
         "key": "ctrl+enter",
         "mac": "cmd+enter",
-        "when": "editorTextFocus && editorLangId =~ /^ruby$|^crystal$|^elixir$|^julia$|^lua$|^shellscript$/"
+        "when": "editorTextFocus && editorLangId =~ /^ruby$|^crystal$|^elixir$|^julia$|^lua$|^makefile$|^shellscript$/"
       }
     ]
   },

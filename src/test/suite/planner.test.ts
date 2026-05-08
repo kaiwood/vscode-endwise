@@ -94,6 +94,17 @@ suite("Endwise edit planner", () => {
     );
   });
 
+  test("builds Makefile plans with endif", () => {
+    assert.strictEqual(
+      plan("ifdef DEBUG", { languageId: "makefile" })?.text,
+      "\n  \nendif"
+    );
+    assert.strictEqual(
+      plan("ifeq ($(CC),gcc)", { languageId: "makefile" })?.text,
+      "\n  \nendif"
+    );
+  });
+
   test("preserves command indentation", () => {
     const result = plan("  if condition", {
       formattingOptions: { insertSpaces: true, tabSize: 4 },

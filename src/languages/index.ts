@@ -2,6 +2,7 @@ import { crystal } from "./crystal";
 import { elixir } from "./elixir";
 import { julia } from "./julia";
 import { lua } from "./lua";
+import { makefile } from "./makefile";
 import { ruby } from "./ruby";
 import { shellscript } from "./shellscript";
 import { LanguageDefinition } from "./types";
@@ -12,6 +13,7 @@ export const SUPPORTED_LANGUAGES = [
   "elixir",
   "julia",
   "lua",
+  "makefile",
   "shellscript",
 ] as const;
 
@@ -23,6 +25,7 @@ const LANGUAGE_DEFINITIONS: Record<SupportedLanguage, LanguageDefinition> = {
   elixir,
   julia,
   lua,
+  makefile,
   shellscript,
 };
 

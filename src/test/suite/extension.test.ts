@@ -112,7 +112,14 @@ async function withInsertFinalNewlineEnabled(run: () => Promise<void>) {
 }
 
 async function withEndwiseLanguageEnabled(
-  language: "ruby" | "crystal" | "elixir" | "julia" | "lua" | "shellscript",
+  language:
+    | "ruby"
+    | "crystal"
+    | "elixir"
+    | "julia"
+    | "lua"
+    | "makefile"
+    | "shellscript",
   value: boolean,
   run: () => Promise<void>,
 ) {
@@ -198,6 +205,7 @@ suite("Extension commands", () => {
       "elixir",
       "julia",
       "lua",
+      "makefile",
       "shellscript",
     ]) {
       assert.ok(
