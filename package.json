@@ -2,7 +2,7 @@
   "name": "endwise",
   "displayName": "endwise",
   "description": "Wisely add closing keywords in Ruby, Crystal, Elixir, Julia, Lua, Makefiles, and shell scripts.",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "preview": false,
   "publisher": "kaiwood",
   "license": "MIT",

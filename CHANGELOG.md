@@ -1,5 +1,9 @@
 # Release notes
 
+## v2.1.0
+
+- Add Makefile support.
+
 ## v2.0.0
 
 - Support for multiple cursors
